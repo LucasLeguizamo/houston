@@ -70,37 +70,39 @@ pub async fn fetch_url_text(url: &str) -> CoreResult<String> {
 }
 
 /// Crude HTML → text: drop script/style blocks, strip tags, decode a few common
-/// entities, collapse whitespace, and truncate. Good enough to feed a model.
+/// entities, collapse whitespace, and truncate. UTF-8 safe — walks the string by
+/// char-boundary slices (never raw byte indices), so accented pages don't panic.
 fn strip_html(html: &str) -> String {
     let mut out = String::with_capacity(html.len());
-    let bytes = html.as_bytes();
-    let lower = html.to_lowercase();
-    let mut i = 0;
-    let mut in_tag = false;
-    while i < bytes.len() {
-        if !in_tag && lower[i..].starts_with("<script") {
-            if let Some(end) = lower[i..].find("</script>") {
-                i += end + "</script>".len();
-                continue;
+    let mut s = html;
+    while !s.is_empty() {
+        if let Some(rest) = skip_block(s, "<script", "</script>") {
+            s = rest;
+            continue;
+        }
+        if let Some(rest) = skip_block(s, "<style", "</style>") {
+            s = rest;
+            continue;
+        }
+        match s.find('<') {
+            // At a tag: skip to the matching '>' (boundary-safe slicing).
+            Some(0) => match s.find('>') {
+                Some(end) => {
+                    s = &s[end + '>'.len_utf8()..];
+                    out.push(' ');
+                }
+                None => break, // unterminated tag; drop the rest
+            },
+            // Text before the next tag: keep it verbatim.
+            Some(idx) => {
+                out.push_str(&s[..idx]);
+                s = &s[idx..];
+            }
+            None => {
+                out.push_str(s);
+                break;
             }
         }
-        if !in_tag && lower[i..].starts_with("<style") {
-            if let Some(end) = lower[i..].find("</style>") {
-                i += end + "</style>".len();
-                continue;
-            }
-        }
-        let c = bytes[i] as char;
-        match c {
-            '<' => in_tag = true,
-            '>' => {
-                in_tag = false;
-                out.push(' ');
-            }
-            _ if !in_tag => out.push(c),
-            _ => {}
-        }
-        i += 1;
     }
     let decoded = out
         .replace("&amp;", "&")
@@ -111,6 +113,19 @@ fn strip_html(html: &str) -> String {
         .replace("&nbsp;", " ");
     let collapsed = decoded.split_whitespace().collect::<Vec<_>>().join(" ");
     collapsed.chars().take(MAX_CHARS).collect()
+}
+
+/// If `s` starts with `open` (ASCII, case-insensitive), return the slice after
+/// the next `close`; else `None`. ASCII-only lowercasing preserves byte length,
+/// so the returned index is a valid char boundary.
+fn skip_block<'a>(s: &'a str, open: &str, close: &str) -> Option<&'a str> {
+    let head = s.get(..open.len())?;
+    if !head.eq_ignore_ascii_case(open) {
+        return None;
+    }
+    let lower = s.to_ascii_lowercase();
+    let pos = lower.find(&close.to_ascii_lowercase())?;
+    Some(&s[pos + close.len()..])
 }
 
 /// Extract bible fields from raw material and merge into the existing bible.
@@ -221,6 +236,17 @@ mod tests {
         assert!(!text.contains("alert"));
         assert!(!text.contains("color:red"));
         assert!(!text.contains('<'));
+    }
+
+    #[test]
+    fn strip_html_is_utf8_safe() {
+        // Non-ASCII before/inside tags must not panic (regression: byte-index
+        // slicing of a Unicode-lowercased copy). Accents must survive.
+        let html = "<p>Café São Paulo — ¡hola! 日本語</p><SCRIPT>café()</SCRIPT>";
+        let text = strip_html(html);
+        assert!(text.contains("Café São Paulo"));
+        assert!(text.contains("日本語"));
+        assert!(!text.contains("café()"));
     }
 
     #[test]
