@@ -112,5 +112,15 @@
     "subtitle": "Tudo o que sabemos sobre sua empresa, em um só lugar. Toque em qualquer cartão para editar.",
     "empty": "Ainda não preenchido",
     "improve": "Melhorar com IA"
+  },
+  "bibles": {
+    "defaultName": "Bíblia da empresa",
+    "create": "Nova bíblia",
+    "setActive": "Marcar ativa",
+    "activeTag": "Ativa",
+    "delete": "Excluir bíblia",
+    "export": "Exportar",
+    "emptyTitle": "Ainda não há bíblias",
+    "emptyBody": "Crie sua primeira bíblia de contexto para capturar tudo sobre um produto ou empresa."
   }
 }

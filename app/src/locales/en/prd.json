@@ -112,5 +112,15 @@
     "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
     "empty": "Not added yet",
     "improve": "Improve with AI"
+  },
+  "bibles": {
+    "defaultName": "Company Bible",
+    "create": "New bible",
+    "setActive": "Set active",
+    "activeTag": "Active",
+    "delete": "Delete bible",
+    "export": "Export",
+    "emptyTitle": "No bibles yet",
+    "emptyBody": "Create your first context bible to capture everything about a product or company."
   }
 }

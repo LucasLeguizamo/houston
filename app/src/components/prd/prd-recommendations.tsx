@@ -12,6 +12,7 @@ import {
 } from "@houston-ai/core";
 import type {
   AgentRecommendation,
+  Prd,
   StrategyRecommendation,
 } from "@houston-ai/engine-client";
 import { usePrdRecommend } from "../../hooks/queries";
@@ -77,10 +78,12 @@ function StrategyCard({ rec }: { rec: StrategyRecommendation }) {
  */
 export function PrdRecommendations({
   workspaceId,
+  prd,
   provider,
   model,
 }: {
   workspaceId: string;
+  prd: Prd;
   provider: string;
   model: string;
 }) {
@@ -94,7 +97,7 @@ export function PrdRecommendations({
         <p className="text-sm text-muted-foreground">{t("recommend.intro")}</p>
         <Button
           className="self-start"
-          onClick={() => recommend.mutate({ provider, model })}
+          onClick={() => recommend.mutate({ prd, provider, model })}
           disabled={recommend.isPending}
         >
           {recommend.isPending ? (

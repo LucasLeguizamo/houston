@@ -14,6 +14,7 @@ use houston_engine_core::workspace_prd::interview::{
     apply_answers, generate_questions, Answer, Question,
 };
 use houston_engine_core::workspace_prd::recommend::{recommend, Recommendations};
+use houston_engine_core::workspace_prd::library::{self, BibleList, BibleMeta};
 use houston_engine_core::workspace_prd::{self, Prd};
 use houston_engine_core::workspaces::{self, CreateWorkspace, RenameWorkspace, Workspace};
 use houston_engine_core::{store, CoreError};
@@ -31,8 +32,17 @@ pub fn router() -> Router<Arc<ServerState>> {
             "/workspaces/:id/context",
             get(get_context).put(put_context),
         )
-        // Company Bible (PRD) — workspace-level structured product/company doc.
-        .route("/workspaces/:id/prd", get(get_prd).put(put_prd))
+        // Company Bibles — a workspace can hold several; one is active.
+        .route("/workspaces/:id/prd/bibles", get(list_bibles).post(create_bible))
+        .route(
+            "/workspaces/:id/prd/bibles/:bible_id",
+            get(get_bible).put(put_bible).delete(delete_bible),
+        )
+        .route(
+            "/workspaces/:id/prd/bibles/:bible_id/activate",
+            post(activate_bible),
+        )
+        // Bible AI flows (operate on a bible passed in the body).
         .route("/workspaces/:id/prd/questions", post(prd_questions))
         .route("/workspaces/:id/prd/answers", post(prd_answers))
         .route("/workspaces/:id/prd/recommend", post(prd_recommend))
@@ -143,22 +153,62 @@ fn resolve_oneshot(
     }
 }
 
-async fn get_prd(
+async fn list_bibles(
     State(st): State<Arc<ServerState>>,
     Path(id): Path<String>,
-) -> Result<Json<Prd>, ApiError> {
+) -> Result<Json<BibleList>, ApiError> {
     let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
-    Ok(Json(workspace_prd::read(&dir)?))
+    Ok(Json(library::list(&dir)?))
 }
 
-async fn put_prd(
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CreateBibleBody {
+    name: String,
+}
+
+async fn create_bible(
     State(st): State<Arc<ServerState>>,
     Path(id): Path<String>,
+    Json(body): Json<CreateBibleBody>,
+) -> Result<Json<BibleMeta>, ApiError> {
+    let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
+    Ok(Json(library::create(&dir, &body.name)?))
+}
+
+async fn get_bible(
+    State(st): State<Arc<ServerState>>,
+    Path((id, bible_id)): Path<(String, String)>,
+) -> Result<Json<Prd>, ApiError> {
+    let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
+    Ok(Json(library::get(&dir, &bible_id)?))
+}
+
+async fn put_bible(
+    State(st): State<Arc<ServerState>>,
+    Path((id, bible_id)): Path<(String, String)>,
     Json(body): Json<Prd>,
 ) -> Result<Json<Prd>, ApiError> {
     let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
-    workspace_prd::write(&dir, &body)?;
-    Ok(Json(workspace_prd::read(&dir)?))
+    Ok(Json(library::update(&dir, &bible_id, &body)?))
+}
+
+async fn delete_bible(
+    State(st): State<Arc<ServerState>>,
+    Path((id, bible_id)): Path<(String, String)>,
+) -> Result<(), ApiError> {
+    let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
+    library::delete(&dir, &bible_id)?;
+    Ok(())
+}
+
+async fn activate_bible(
+    State(st): State<Arc<ServerState>>,
+    Path((id, bible_id)): Path<(String, String)>,
+) -> Result<(), ApiError> {
+    let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
+    library::set_active(&dir, &bible_id)?;
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -213,6 +263,8 @@ async fn prd_answers(
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct PrdRecommendBody {
+    /// The bible to recommend from (the client passes the active one).
+    prd: Prd,
     #[serde(default)]
     provider: Option<String>,
     #[serde(default)]
@@ -220,15 +272,13 @@ struct PrdRecommendBody {
 }
 
 async fn prd_recommend(
-    State(st): State<Arc<ServerState>>,
-    Path(id): Path<String>,
+    State(_st): State<Arc<ServerState>>,
+    Path(_id): Path<String>,
     Json(body): Json<PrdRecommendBody>,
 ) -> Result<Json<Recommendations>, ApiError> {
-    let dir = workspace_prd::resolve_dir(st.engine.paths.docs(), &id)?;
-    let prd = workspace_prd::read(&dir)?;
     let catalog = store::fetch_catalog().await?;
     let (provider, model) = resolve_oneshot(body.provider, body.model)?;
-    let recs = recommend(&prd, &catalog, provider, model.as_deref()).await?;
+    let recs = recommend(&body.prd, &catalog, provider, model.as_deref()).await?;
     Ok(Json(recs))
 }
 

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Plus, Sparkles } from "lucide-react";
 import {
   Button,
   Empty,
@@ -8,23 +8,25 @@ import {
   EmptyHeader,
   EmptyTitle,
   Progress,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Spinner,
   cn,
 } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
 import { useWorkspaceStore } from "../../stores/workspaces";
 import { getDefaultModel, getProvider } from "../../lib/providers";
-import { usePrd, useSavePrd } from "../../hooks/queries";
+import {
+  useActivateBible,
+  useBible,
+  useBibles,
+  useCreateBible,
+  useDeleteBible,
+  useSaveBible,
+} from "../../hooks/queries";
 import { computeCompleteness, emptyPrd } from "./prd-model";
-import { PrdWiki } from "./prd-wiki";
-import { PrdOnboardingStart } from "./prd-onboarding-start";
-import { PrdInterview } from "./prd-interview";
+import { PrdBibleBar } from "./prd-bible-bar";
+import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
+import { downloadBible } from "./prd-export";
 
 type View = "bible" | "recommend";
 
@@ -32,43 +34,65 @@ export function CompanyBible() {
   const { t } = useTranslation("prd");
   const workspace = useWorkspaceStore((s) => s.current);
   const workspaceId = workspace?.id;
-  const { data, isLoading } = usePrd(workspaceId);
-  const save = useSavePrd(workspaceId);
+  const { data: list, isLoading } = useBibles(workspaceId);
+  const create = useCreateBible(workspaceId);
+  const save = useSaveBible(workspaceId);
+  const remove = useDeleteBible(workspaceId);
+  const activate = useActivateBible(workspaceId);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<View>("bible");
-  // Bible-tab mode: null = derive from data. "start" only for a brand-new empty
-  // bible; "interview" while actively running the quick-insight flow; "wiki"
-  // (the default for any populated bible) just browses/edits — it never auto-runs
-  // the interview, so a completed bible won't get stuck "preparing questions".
   const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
-  // Model used for the whole onboarding (interview + ingest + recommend). Lets
-  // the user pick a faster model for quick insight. Provider follows the
-  // workspace; model defaults to the workspace's, overridable here.
   const [modelOverride, setModelOverride] = useState<string | null>(null);
+
+  const bibles = list?.bibles ?? [];
+  const activeId = list?.activeId ?? "";
+  const selected = selectedId ?? (activeId || bibles[0]?.id || "");
   const provider = workspace?.provider ?? "anthropic";
   const model = modelOverride ?? workspace?.model ?? getDefaultModel(provider);
   const models = getProvider(provider)?.models ?? [];
+  const { data: bibleData } = useBible(workspaceId, selected || undefined);
+  const prd: Prd = bibleData ?? emptyPrd();
+  const completeness = computeCompleteness(prd);
+
+  // Re-derive the per-bible view mode whenever the selected bible changes.
+  useEffect(() => setMode(null), [selected]);
 
   if (!workspace) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>{t("noWorkspace.title")}</EmptyTitle>
-            <EmptyDescription>{t("noWorkspace.description")}</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      </div>
+      <Centered>
+        <EmptyHeader>
+          <EmptyTitle>{t("noWorkspace.title")}</EmptyTitle>
+          <EmptyDescription>{t("noWorkspace.description")}</EmptyDescription>
+        </EmptyHeader>
+      </Centered>
     );
   }
 
-  const prd: Prd = data ?? emptyPrd();
-  const completeness = computeCompleteness(prd);
-  // Return the promise so callers (the onboarding start screen) can await the
-  // write — and the cache update — before handing off to the question flow,
-  // otherwise the first interview turn would run against the pre-ingest bible.
-  const persist = (next: Prd) => save.mutateAsync(next);
-  // A brand-new, untouched bible starts in the onboarding; anything with content
-  // (or a returning user) lands on the wiki.
+  const newBible = () =>
+    create.mutate(t("bibles.defaultName"), {
+      onSuccess: (meta) => {
+        setSelectedId(meta.id);
+        setMode("start");
+        setView("bible");
+      },
+    });
+
+  if (!isLoading && bibles.length === 0) {
+    return (
+      <Centered>
+        <EmptyHeader>
+          <EmptyTitle>{t("bibles.emptyTitle")}</EmptyTitle>
+          <EmptyDescription>{t("bibles.emptyBody")}</EmptyDescription>
+        </EmptyHeader>
+        <Button className="mt-4" onClick={newBible} disabled={create.isPending}>
+          {create.isPending ? <Spinner className="size-4" /> : <Plus className="size-4" />}
+          {t("bibles.create")}
+        </Button>
+      </Centered>
+    );
+  }
+
+  const persist = (next: Prd) => save.mutateAsync({ bibleId: selected, prd: next });
   const effectiveMode = mode ?? (completeness === 0 && !prd.role ? "start" : "wiki");
 
   return (
@@ -83,14 +107,26 @@ export function CompanyBible() {
             <ViewTab active={view === "bible"} onClick={() => setView("bible")}>
               {t("tabs.bible")}
             </ViewTab>
-            <ViewTab
-              active={view === "recommend"}
-              onClick={() => setView("recommend")}
-            >
+            <ViewTab active={view === "recommend"} onClick={() => setView("recommend")}>
               <Sparkles className="size-3.5" />
               {t("tabs.recommend")}
             </ViewTab>
           </div>
+        </div>
+        <div className="mt-3">
+          <PrdBibleBar
+            bibles={bibles}
+            activeId={activeId}
+            selectedId={selected}
+            models={models}
+            model={model}
+            onSelect={(id) => setSelectedId(id)}
+            onCreate={newBible}
+            onActivate={(id) => activate.mutate(id)}
+            onDelete={(id) => remove.mutate(id)}
+            onExport={() => downloadBible(bibles.find((b) => b.id === selected)?.name, prd)}
+            onModel={setModelOverride}
+          />
         </div>
         <div className="mt-3 flex items-center gap-3">
           <Progress value={completeness} className="h-1.5 max-w-xs" />
@@ -98,28 +134,8 @@ export function CompanyBible() {
             {t("completeness", { percent: completeness })}
           </span>
           {save.isPending && <Spinner className="size-3.5" />}
-          {models.length > 0 && (
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {t("modelLabel")}
-              </span>
-              <Select value={model} onValueChange={setModelOverride}>
-                <SelectTrigger className="h-7 w-auto gap-1 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {models.map((m) => (
-                    <SelectItem key={m.id} value={m.id} className="text-xs">
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </div>
       </header>
-
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-3xl">
           {isLoading ? (
@@ -127,57 +143,37 @@ export function CompanyBible() {
               <Spinner className="size-5" />
             </div>
           ) : view === "bible" ? (
-            <div className="flex flex-col gap-6">
-              {effectiveMode === "start" ? (
-                <PrdOnboardingStart
-                  workspaceId={workspace.id}
-                  prd={prd}
-                  provider={provider}
-                  model={model}
-                  onPrdUpdate={persist}
-                  onStarted={() => setMode("interview")}
-                />
-              ) : effectiveMode === "interview" ? (
-                <>
-                  <PrdInterview
-                    workspaceId={workspace.id}
-                    prd={prd}
-                    provider={provider}
-                    model={model}
-                    onPrdUpdate={persist}
-                    onComplete={() => {
-                      setMode("wiki");
-                      setView("recommend");
-                    }}
-                  />
-                  <PrdWiki prd={prd} onChange={persist} />
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-end">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => setMode("interview")}
-                    >
-                      <Sparkles className="size-3.5" />
-                      {t("wiki.improve")}
-                    </Button>
-                  </div>
-                  <PrdWiki prd={prd} onChange={persist} />
-                </>
-              )}
-            </div>
+            <PrdBibleTab
+              workspaceId={workspace.id}
+              prd={prd}
+              provider={provider}
+              model={model}
+              mode={effectiveMode}
+              onMode={setMode}
+              persist={persist}
+              onComplete={() => {
+                setMode("wiki");
+                setView("recommend");
+              }}
+            />
           ) : (
             <PrdRecommendations
               workspaceId={workspace.id}
+              prd={prd}
               provider={provider}
               model={model}
             />
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-1 items-center justify-center p-8">
+      <Empty>{children}</Empty>
     </div>
   );
 }
@@ -196,10 +192,7 @@ function ViewTab({
       variant="ghost"
       size="sm"
       onClick={onClick}
-      className={cn(
-        "h-7 gap-1.5 px-3 text-xs",
-        active && "bg-background shadow-sm",
-      )}
+      className={cn("h-7 gap-1.5 px-3 text-xs", active && "bg-background shadow-sm")}
     >
       {children}
     </Button>

@@ -36,8 +36,12 @@ export {
   useUpdateLearning,
 } from "./use-learnings";
 export {
-  usePrd,
-  useSavePrd,
+  useBibles,
+  useBible,
+  useCreateBible,
+  useSaveBible,
+  useDeleteBible,
+  useActivateBible,
   usePrdQuestions,
   usePrdApplyAnswers,
   usePrdIngest,

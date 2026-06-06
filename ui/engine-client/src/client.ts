@@ -73,6 +73,9 @@ import type {
   Workspace,
   WorkspaceContext,
   Prd,
+  BibleList,
+  BibleMeta,
+  CreateBibleRequest,
   PrdQuestion,
   PrdQuestionsRequest,
   PrdApplyAnswersRequest,
@@ -220,11 +223,26 @@ export class HoustonClient {
 
   // ---------- Company Bible (PRD) ----------
 
-  getPrd(id: string): Promise<Prd> {
-    return this.request("GET", `/workspaces/${this.seg(id)}/prd`);
+  listBibles(id: string): Promise<BibleList> {
+    return this.request("GET", `/workspaces/${this.seg(id)}/prd/bibles`);
   }
-  setPrd(id: string, body: Prd): Promise<Prd> {
-    return this.request("PUT", `/workspaces/${this.seg(id)}/prd`, body);
+  createBible(id: string, body: CreateBibleRequest): Promise<BibleMeta> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/bibles`, body);
+  }
+  getBible(id: string, bibleId: string): Promise<Prd> {
+    return this.request("GET", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`);
+  }
+  setBible(id: string, bibleId: string, body: Prd): Promise<Prd> {
+    return this.request("PUT", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`, body);
+  }
+  deleteBible(id: string, bibleId: string): Promise<void> {
+    return this.request("DELETE", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`);
+  }
+  activateBible(id: string, bibleId: string): Promise<void> {
+    return this.request(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}/activate`,
+    );
   }
   async prdQuestions(
     id: string,
@@ -240,7 +258,7 @@ export class HoustonClient {
   prdApplyAnswers(id: string, body: PrdApplyAnswersRequest): Promise<Prd> {
     return this.request("POST", `/workspaces/${this.seg(id)}/prd/answers`, body);
   }
-  prdRecommend(id: string, body: PrdRecommendRequest = {}): Promise<PrdRecommendations> {
+  prdRecommend(id: string, body: PrdRecommendRequest): Promise<PrdRecommendations> {
     return this.request("POST", `/workspaces/${this.seg(id)}/prd/recommend`, body);
   }
   prdIngest(id: string, body: PrdIngestRequest): Promise<Prd> {

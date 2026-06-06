@@ -124,6 +124,10 @@ export const tauriWorkspaces = {
 // ─── Company Bible (PRD) ──────────────────────────────────────────────
 
 type Prd = import("@houston-ai/engine-client").Prd;
+type BibleList = import("@houston-ai/engine-client").BibleList;
+type BibleMeta = import("@houston-ai/engine-client").BibleMeta;
+type CreateBibleRequest =
+  import("@houston-ai/engine-client").CreateBibleRequest;
 type PrdQuestion = import("@houston-ai/engine-client").PrdQuestion;
 type PrdQuestionsRequest =
   import("@houston-ai/engine-client").PrdQuestionsRequest;
@@ -136,16 +140,25 @@ type PrdRecommendations =
 type PrdIngestRequest = import("@houston-ai/engine-client").PrdIngestRequest;
 
 export const tauriPrd = {
-  get: (id: string) => call<Prd>("get_prd", () => getEngine().getPrd(id)),
-  save: (id: string, body: Prd) =>
-    call<Prd>("set_prd", () => getEngine().setPrd(id, body)),
+  listBibles: (id: string) =>
+    call<BibleList>("list_bibles", () => getEngine().listBibles(id)),
+  createBible: (id: string, body: CreateBibleRequest) =>
+    call<BibleMeta>("create_bible", () => getEngine().createBible(id, body)),
+  getBible: (id: string, bibleId: string) =>
+    call<Prd>("get_bible", () => getEngine().getBible(id, bibleId)),
+  saveBible: (id: string, bibleId: string, body: Prd) =>
+    call<Prd>("set_bible", () => getEngine().setBible(id, bibleId, body)),
+  deleteBible: (id: string, bibleId: string) =>
+    call<void>("delete_bible", () => getEngine().deleteBible(id, bibleId)),
+  activateBible: (id: string, bibleId: string) =>
+    call<void>("activate_bible", () => getEngine().activateBible(id, bibleId)),
   questions: (id: string, body: PrdQuestionsRequest) =>
     call<PrdQuestion[]>("prd_questions", () =>
       getEngine().prdQuestions(id, body),
     ),
   applyAnswers: (id: string, body: PrdApplyAnswersRequest) =>
     call<Prd>("prd_answers", () => getEngine().prdApplyAnswers(id, body)),
-  recommend: (id: string, body: PrdRecommendRequest = {}) =>
+  recommend: (id: string, body: PrdRecommendRequest) =>
     call<PrdRecommendations>("prd_recommend", () =>
       getEngine().prdRecommend(id, body),
     ),

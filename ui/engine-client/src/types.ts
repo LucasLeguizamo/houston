@@ -140,6 +140,24 @@ export interface PrdBrand {
   links: string[];
 }
 
+/** Listing entry for one context bible (no full payload). */
+export interface BibleMeta {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** All bibles in a workspace + which one is active. */
+export interface BibleList {
+  activeId: string;
+  bibles: BibleMeta[];
+}
+
+export interface CreateBibleRequest {
+  name: string;
+}
+
 export interface Prd {
   /** Stakeholder perspective: "founder" | "investor" | "pm" | "vp" | ... */
   role: string;
@@ -177,6 +195,8 @@ export interface PrdApplyAnswersRequest {
 }
 
 export interface PrdRecommendRequest {
+  /** The bible to recommend from (typically the active one). */
+  prd: Prd;
   provider?: string;
   model?: string;
 }

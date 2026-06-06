@@ -1,33 +1,93 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  BibleList,
+  BibleMeta,
   Prd,
+  PrdApplyAnswersRequest,
   PrdIngestRequest,
   PrdQuestion,
   PrdQuestionsRequest,
-  PrdApplyAnswersRequest,
   PrdRecommendations,
   PrdRecommendRequest,
 } from "@houston-ai/engine-client";
 import { tauriPrd } from "../../lib/tauri";
 import { queryKeys } from "../../lib/query-keys";
 
-/** The Company Bible for a workspace. */
-export function usePrd(workspaceId: string | undefined) {
+/** All context bibles in a workspace + which one is active. */
+export function useBibles(workspaceId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.prd(workspaceId ?? ""),
-    queryFn: () => tauriPrd.get(workspaceId!),
+    queryKey: queryKeys.prdBibles(workspaceId ?? ""),
+    queryFn: () => tauriPrd.listBibles(workspaceId!),
     enabled: !!workspaceId,
   });
 }
 
-/** Persist the full bible. Writes through to the cache on success. */
-export function useSavePrd(workspaceId: string | undefined) {
+/** One bible's document. */
+export function useBible(
+  workspaceId: string | undefined,
+  bibleId: string | undefined,
+) {
+  return useQuery({
+    queryKey: queryKeys.prdBible(workspaceId ?? "", bibleId ?? ""),
+    queryFn: () => tauriPrd.getBible(workspaceId!, bibleId!),
+    enabled: !!workspaceId && !!bibleId,
+  });
+}
+
+export function useCreateBible(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Prd) => tauriPrd.save(workspaceId!, body),
-    onSuccess: (data) => {
-      if (workspaceId) qc.setQueryData(queryKeys.prd(workspaceId), data);
+    mutationFn: (name: string) => tauriPrd.createBible(workspaceId!, { name }),
+    onSuccess: () => {
+      if (workspaceId)
+        qc.invalidateQueries({ queryKey: queryKeys.prdBibles(workspaceId) });
     },
+  });
+}
+
+/** Persist a bible's document; writes through the cache for that bible. */
+export function useSaveBible(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bibleId, prd }: { bibleId: string; prd: Prd }) =>
+      tauriPrd.saveBible(workspaceId!, bibleId, prd),
+    onSuccess: (data, { bibleId }) => {
+      if (!workspaceId) return;
+      qc.setQueryData(queryKeys.prdBible(workspaceId, bibleId), data);
+      qc.invalidateQueries({ queryKey: queryKeys.prdBibles(workspaceId) });
+    },
+  });
+}
+
+export function useDeleteBible(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (bibleId: string) => tauriPrd.deleteBible(workspaceId!, bibleId),
+    onSuccess: () => {
+      if (workspaceId)
+        qc.invalidateQueries({ queryKey: queryKeys.prdBibles(workspaceId) });
+    },
+  });
+}
+
+export function useActivateBible(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (bibleId: string) =>
+      tauriPrd.activateBible(workspaceId!, bibleId),
+    onSuccess: () => {
+      if (workspaceId)
+        qc.invalidateQueries({ queryKey: queryKeys.prdBibles(workspaceId) });
+    },
+  });
+}
+
+/** Pre-fill a bible from a website URL or document text. */
+export function usePrdIngest(
+  workspaceId: string | undefined,
+): ReturnType<typeof useMutation<Prd, Error, PrdIngestRequest>> {
+  return useMutation({
+    mutationFn: (body: PrdIngestRequest) => tauriPrd.ingest(workspaceId!, body),
   });
 }
 
@@ -41,8 +101,7 @@ export function usePrdQuestions(
   });
 }
 
-/** Fold a full set of answers into the bible in one call. Returns the merged
- * bible for the caller to persist (via `useSavePrd`). */
+/** Fold a full set of answers into the bible in one call. */
 export function usePrdApplyAnswers(
   workspaceId: string | undefined,
 ): ReturnType<typeof useMutation<Prd, Error, PrdApplyAnswersRequest>> {
@@ -52,24 +111,14 @@ export function usePrdApplyAnswers(
   });
 }
 
-/** Pre-fill the bible from a website URL or document text. Returns the merged
- * bible for the caller to persist (via `useSavePrd`). */
-export function usePrdIngest(
+/** Recommend agents + strategies from a bible. */
+export function usePrdRecommend(
   workspaceId: string | undefined,
-): ReturnType<typeof useMutation<Prd, Error, PrdIngestRequest>> {
+): ReturnType<typeof useMutation<PrdRecommendations, Error, PrdRecommendRequest>> {
   return useMutation({
-    mutationFn: (body: PrdIngestRequest) => tauriPrd.ingest(workspaceId!, body),
+    mutationFn: (body: PrdRecommendRequest) =>
+      tauriPrd.recommend(workspaceId!, body),
   });
 }
 
-/** Recommend agents + strategies from the saved bible. */
-export function usePrdRecommend(
-  workspaceId: string | undefined,
-): ReturnType<
-  typeof useMutation<PrdRecommendations, Error, PrdRecommendRequest | undefined>
-> {
-  return useMutation({
-    mutationFn: (body?: PrdRecommendRequest) =>
-      tauriPrd.recommend(workspaceId!, body ?? {}),
-  });
-}
+export type { BibleList, BibleMeta };

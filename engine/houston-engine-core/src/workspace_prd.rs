@@ -8,56 +8,22 @@
 //! and is the source of truth that (a) gets appended to every agent's system
 //! prompt at session start and (b) drives agent + strategy recommendations.
 //!
-//! Stored as `PRD.json` at the root of the workspace directory, next to
-//! `WORKSPACE.md` / `USER.md`. Like `workspace_context`, writes do not emit a
-//! `HoustonEvent`: the file lives at the workspace root (outside the per-agent
-//! file-watcher), so the UI stays in sync by invalidating its own query on the
-//! mutation that wrote it. Changes take effect on the **next** chat — running
-//! sessions keep the copy baked into their prompt at spawn.
+//! A workspace can hold several context bibles (see `library`), stored together
+//! in `prd/bibles.json` at the workspace root. One is active; the active bible is
+//! what gets appended to every agent's system prompt at session start. Writes do
+//! not emit a `HoustonEvent` (the file is outside the per-agent watcher); the UI
+//! stays in sync by invalidating its own query on the mutation that wrote it.
 
-use crate::error::{CoreError, CoreResult};
-use std::fs;
+use crate::error::CoreResult;
 use std::path::{Path, PathBuf};
 
 pub mod ingest;
 pub mod interview;
+pub mod library;
 pub mod recommend;
 mod types;
 
 pub use types::{BusinessModel, Brand, Company, Goals, Market, Operations, Prd, Product};
-
-pub const PRD_JSON: &str = "PRD.json";
-
-fn prd_path(ws_dir: &Path) -> PathBuf {
-    ws_dir.join(PRD_JSON)
-}
-
-/// Read the workspace's PRD. A missing file is a brand-new, empty bible.
-/// A present-but-corrupt file is surfaced as an error rather than silently
-/// dropped, so the user gets a toast instead of losing their work.
-pub fn read(ws_dir: &Path) -> CoreResult<Prd> {
-    let path = prd_path(ws_dir);
-    let contents = match fs::read_to_string(&path) {
-        Ok(c) => c,
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Prd::default()),
-        Err(e) => return Err(CoreError::Internal(format!("failed to read {PRD_JSON}: {e}"))),
-    };
-    if contents.trim().is_empty() {
-        return Ok(Prd::default());
-    }
-    serde_json::from_str(&contents)
-        .map_err(|e| CoreError::Internal(format!("failed to parse {PRD_JSON}: {e}")))
-}
-
-/// Overwrite the workspace's PRD.
-pub fn write(ws_dir: &Path, prd: &Prd) -> CoreResult<()> {
-    fs::create_dir_all(ws_dir)?;
-    let body = serde_json::to_string_pretty(prd)
-        .map_err(|e| CoreError::Internal(format!("failed to serialize {PRD_JSON}: {e}")))?;
-    fs::write(prd_path(ws_dir), body)
-        .map_err(|e| CoreError::Internal(format!("failed to write {PRD_JSON}: {e}")))?;
-    Ok(())
-}
 
 /// Resolve a workspace directory by id under the given root. Delegates to
 /// `workspace_context` so both surfaces share one resolution rule.
@@ -132,15 +98,16 @@ fn list(out: &mut String, label: &str, items: &[String]) {
     }
 }
 
-/// Build the prompt section the engine appends to every agent's system prompt.
+/// Build the prompt section the engine appends to every agent's system prompt,
+/// from the workspace's ACTIVE bible.
 ///
 /// Returns `None` when `ws_dir` isn't a real workspace (no `.houston/`) or the
-/// bible is still empty — an empty bible adds nothing to the prompt.
+/// active bible is still empty — an empty bible adds nothing to the prompt.
 pub fn build_prompt_section(ws_dir: &Path) -> Option<String> {
     if !ws_dir.join(".houston").exists() {
         return None;
     }
-    let prd = read(ws_dir).ok()?;
+    let prd = library::active_prd(ws_dir)?;
     let body = prd.render_markdown()?;
     let mut out = String::new();
     out.push_str("# Company Bible\n\n");
@@ -156,6 +123,7 @@ pub fn build_prompt_section(ws_dir: &Path) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
     use tempfile::TempDir;
 
     fn sample() -> Prd {
@@ -173,27 +141,13 @@ mod tests {
         }
     }
 
-    #[test]
-    fn read_returns_empty_when_file_absent() {
+    /// Create + activate a bible carrying `prd`, returning the workspace dir.
+    fn ws_with_active(prd: Prd) -> TempDir {
         let d = TempDir::new().unwrap();
-        let prd = read(d.path()).unwrap();
-        assert!(prd.is_empty());
-    }
-
-    #[test]
-    fn write_round_trips() {
-        let d = TempDir::new().unwrap();
-        write(d.path(), &sample()).unwrap();
-        let prd = read(d.path()).unwrap();
-        assert_eq!(prd.company.name, "Acme");
-        assert_eq!(prd.operations.pain_points[0], "slow invoicing");
-    }
-
-    #[test]
-    fn corrupt_file_surfaces_error() {
-        let d = TempDir::new().unwrap();
-        fs::write(d.path().join(PRD_JSON), "{ not json").unwrap();
-        assert!(read(d.path()).is_err());
+        fs::create_dir_all(d.path().join(".houston")).unwrap();
+        let meta = library::create(d.path(), "Bible").unwrap();
+        library::update(d.path(), &meta.id, &prd).unwrap();
+        d
     }
 
     #[test]
@@ -207,10 +161,8 @@ mod tests {
     }
 
     #[test]
-    fn build_prompt_section_includes_content() {
-        let d = TempDir::new().unwrap();
-        fs::create_dir_all(d.path().join(".houston")).unwrap();
-        write(d.path(), &sample()).unwrap();
+    fn build_prompt_section_includes_active_bible() {
+        let d = ws_with_active(sample());
         let out = build_prompt_section(d.path()).unwrap();
         assert!(out.contains("# Company Bible"));
         assert!(out.contains("Company: Acme"));
@@ -220,15 +172,15 @@ mod tests {
     fn build_prompt_section_none_when_empty() {
         let d = TempDir::new().unwrap();
         fs::create_dir_all(d.path().join(".houston")).unwrap();
-        // No PRD.json written → empty bible → no section.
+        // No bibles created → nothing active → no section.
         assert!(build_prompt_section(d.path()).is_none());
     }
 
     #[test]
     fn build_prompt_section_none_outside_workspace() {
         let d = TempDir::new().unwrap();
-        write(d.path(), &sample()).unwrap();
-        // No `.houston/` => not a real workspace.
+        // No `.houston/` => not a real workspace, even with a bible on disk.
+        library::create(d.path(), "Bible").unwrap();
         assert!(build_prompt_section(d.path()).is_none());
     }
 }
