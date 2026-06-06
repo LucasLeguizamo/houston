@@ -308,6 +308,9 @@ struct PrdChatBody {
     #[serde(default)]
     messages: Vec<ChatMessage>,
     message: String,
+    /// An optional bible card the user attached for the model to focus on.
+    #[serde(default)]
+    context: Option<String>,
     #[serde(default)]
     provider: Option<String>,
     #[serde(default)]
@@ -326,8 +329,15 @@ async fn prd_chat(
     Json(body): Json<PrdChatBody>,
 ) -> Result<Json<PrdChatResponse>, ApiError> {
     let (provider, model) = resolve_oneshot(body.provider, body.model)?;
-    let reply =
-        prd_chat_fn(&body.prd, &body.messages, &body.message, provider, model.as_deref()).await?;
+    let reply = prd_chat_fn(
+        &body.prd,
+        &body.messages,
+        &body.message,
+        body.context.as_deref(),
+        provider,
+        model.as_deref(),
+    )
+    .await?;
     Ok(Json(PrdChatResponse { reply }))
 }
 

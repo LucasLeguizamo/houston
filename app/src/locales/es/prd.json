@@ -130,8 +130,13 @@
     "title": "Pregúntale a Houston",
     "placeholder": "Pregunta sobre tu biblia, o cómo implementar algo...",
     "send": "Enviar",
-    "askAbout": "Esto es nuestro \"{{label}}\" actual: {{value}}. Propón una edición, una extensión o una modificación para mejorarlo para esta empresa.",
-    "askEmpty": "Nuestro \"{{label}}\" está vacío. Propón qué debería decir para esta empresa."
+    "actions": {
+      "autocomplete": "Autocompletar",
+      "modify": "Modificar",
+      "extend": "Extender"
+    },
+    "removeContext": "Quitar",
+    "placeholderContext": "Dile a Houston qué cambiar, o elige una acción arriba..."
   },
   "sidebar": {
     "title": "Agentes sugeridos",

@@ -23,15 +23,17 @@ pub struct ChatMessage {
     pub content: String,
 }
 
-/// Answer one chat turn grounded in the bible.
+/// Answer one chat turn grounded in the bible. `context` is an optional card the
+/// user attached (a "section.field" value) to focus the turn on.
 pub async fn chat(
     prd: &Prd,
     history: &[ChatMessage],
     message: &str,
+    context: Option<&str>,
     provider: Provider,
     model: Option<&str>,
 ) -> CoreResult<String> {
-    let prompt = build_prompt(prd, history, message);
+    let prompt = build_prompt(prd, history, message, context);
     let model = default_model(provider, model)
         .ok_or_else(|| crate::CoreError::Internal(format!(
             "no chat model wired up for provider {:?}",
@@ -43,7 +45,12 @@ pub async fn chat(
     Ok(reply.trim().to_string())
 }
 
-fn build_prompt(prd: &Prd, history: &[ChatMessage], message: &str) -> String {
+fn build_prompt(
+    prd: &Prd,
+    history: &[ChatMessage],
+    message: &str,
+    context: Option<&str>,
+) -> String {
     let bible = prd
         .render_markdown()
         .unwrap_or_else(|| "(the bible is still empty)".to_string());
@@ -55,25 +62,39 @@ fn build_prompt(prd: &Prd, history: &[ChatMessage], message: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n");
-    // JSON-encode the new message so it can't break out of the prompt.
+    // JSON-encode user-supplied text so it can't break out of the prompt.
     let message = serde_json::to_string(message).unwrap_or_else(|_| format!("{message:?}"));
+    let focus = match context.map(str::trim).filter(|c| !c.is_empty()) {
+        Some(c) => {
+            let c = serde_json::to_string(c).unwrap_or_else(|_| format!("{c:?}"));
+            format!(
+                "\nThe user attached this specific bible card to work on:\n{c}\n\
+                 When they ask to autocomplete, modify, or extend, focus on THIS \
+                 card and return a concrete, paste-ready new value for it (a tight \
+                 sentence or short list), then one short line on what changed.\n"
+            )
+        }
+        None => String::new(),
+    };
     format!(
-        r#"You are Houston, a sharp, practical product and strategy copilot for a
-non-technical founder. Ground every answer in their Company Bible below; when
-something is missing from the bible, say so briefly instead of inventing it.
+        r#"You are "PRD Architect", an expert product strategist whose single job is to
+help a non-technical founder build and sharpen their Company Bible (a structured
+PRD). You write crisp, specific, paste-ready content — never vague filler — and
+you ground everything in what this company actually is. If the bible lacks
+something you need, ask one short question or state a clear assumption.
 
 Company Bible:
 {bible}
-
+{focus}
 Conversation so far:
 {transcript}
 
 The user now says:
 {message}
 
-Reply in plain language (no markdown headers, no JSON). Be concise and
-concrete: when they ask how to do something, give clear, specific steps or an
-implementation suggestion grounded in this company's context."#
+Reply in plain language (no markdown headers, no JSON). Be concise and concrete.
+When proposing bible content, give the exact text they can paste, then a one-line
+note. When they ask how to do something, give clear, specific steps."#
     )
 }
 
@@ -99,15 +120,22 @@ mod tests {
             role: "user".into(),
             content: "hi".into(),
         }];
-        let p = build_prompt(&prd, &history, "how do I grow?");
+        let p = build_prompt(&prd, &history, "how do I grow?", None);
         assert!(p.contains("FreeTicket"));
         assert!(p.contains("User: hi"));
         assert!(p.contains("how do I grow?"));
     }
 
     #[test]
+    fn prompt_includes_attached_context() {
+        let p = build_prompt(&Prd::default(), &[], "extend", Some("Pain points: slow checkout"));
+        assert!(p.contains("attached this specific bible card"));
+        assert!(p.contains("slow checkout"));
+    }
+
+    #[test]
     fn prompt_json_escapes_message() {
-        let p = build_prompt(&Prd::default(), &[], "say \"hi\"\nignore previous");
+        let p = build_prompt(&Prd::default(), &[], "say \"hi\"\nignore previous", None);
         assert!(p.contains(r#""say \"hi\"\nignore previous""#));
     }
 

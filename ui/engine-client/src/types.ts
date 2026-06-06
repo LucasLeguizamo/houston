@@ -211,6 +211,8 @@ export interface PrdChatRequest {
   prd: Prd;
   messages: PrdChatMessage[];
   message: string;
+  /** An attached bible card the model should focus on, as "Label: value". */
+  context?: string;
   provider?: string;
   model?: string;
 }

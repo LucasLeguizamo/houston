@@ -44,7 +44,11 @@ export function CompanyBible() {
   const [view, setView] = useState<View>("bible");
   const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
   const [modelOverride, setModelOverride] = useState<string | null>(null);
-  const [injected, setInjected] = useState<{ text: string; nonce: number } | null>(null);
+  const [injected, setInjected] = useState<{
+    label: string;
+    value: string;
+    nonce: number;
+  } | null>(null);
 
   const bibles = list?.bibles ?? [];
   const activeId = list?.activeId ?? "";
@@ -150,12 +154,7 @@ export function CompanyBible() {
               onMode={setMode}
               persist={persist}
               onAsk={(label, value) =>
-                setInjected({
-                  text: value.trim()
-                    ? t("chat.askAbout", { label, value })
-                    : t("chat.askEmpty", { label }),
-                  nonce: Date.now(),
-                })
+                setInjected({ label, value, nonce: Date.now() })
               }
               onComplete={() => {
                 setMode("wiki");
