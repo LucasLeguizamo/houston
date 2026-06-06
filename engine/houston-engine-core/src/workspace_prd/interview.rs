@@ -89,9 +89,10 @@ Do this:
    bible is still empty, base suggestions on the most likely reading of any
    company name or website present. Use an empty array only when there is no
    next question.
-4. If the bible already covers the company, product, market, business model,
-   goals, and operations well enough to be useful, set "complete" to true and
-   set "nextQuestion" to null.
+4. Keep it SHORT: this is a quick-insight interview of AT MOST 10 questions
+   total. Prioritize the highest-impact gaps. As soon as the bible is useful
+   enough to recommend agents and strategies, set "complete" to true and set
+   "nextQuestion" to null — do not pad with low-value questions.
 
 The bible schema (all fields optional, camelCase):
 company {{ name, oneLiner, stage, industry, website, mission }}

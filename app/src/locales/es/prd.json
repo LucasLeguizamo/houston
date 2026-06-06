@@ -104,5 +104,6 @@
       "routine": "Rutina",
       "skill": "Habilidad"
     }
-  }
+  },
+  "modelLabel": "Modelo"
 }

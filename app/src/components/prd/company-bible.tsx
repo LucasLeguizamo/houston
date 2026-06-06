@@ -8,11 +8,17 @@ import {
   EmptyHeader,
   EmptyTitle,
   Progress,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Spinner,
   cn,
 } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
 import { useWorkspaceStore } from "../../stores/workspaces";
+import { getDefaultModel, getProvider } from "../../lib/providers";
 import { usePrd, useSavePrd } from "../../hooks/queries";
 import { computeCompleteness, emptyPrd } from "./prd-model";
 import { PrdSections } from "./prd-sections";
@@ -30,6 +36,13 @@ export function CompanyBible() {
   const save = useSavePrd(workspaceId);
   const [view, setView] = useState<View>("bible");
   const [started, setStarted] = useState(false);
+  // Model used for the whole onboarding (interview + ingest + recommend). Lets
+  // the user pick a faster model for quick insight. Provider follows the
+  // workspace; model defaults to the workspace's, overridable here.
+  const [modelOverride, setModelOverride] = useState<string | null>(null);
+  const provider = workspace?.provider ?? "anthropic";
+  const model = modelOverride ?? workspace?.model ?? getDefaultModel(provider);
+  const models = getProvider(provider)?.models ?? [];
 
   if (!workspace) {
     return (
@@ -80,6 +93,25 @@ export function CompanyBible() {
             {t("completeness", { percent: completeness })}
           </span>
           {save.isPending && <Spinner className="size-3.5" />}
+          {models.length > 0 && (
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {t("modelLabel")}
+              </span>
+              <Select value={model} onValueChange={setModelOverride}>
+                <SelectTrigger className="h-7 w-auto gap-1 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map((m) => (
+                    <SelectItem key={m.id} value={m.id} className="text-xs">
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </header>
 
@@ -95,6 +127,8 @@ export function CompanyBible() {
                 <PrdOnboardingStart
                   workspaceId={workspace.id}
                   prd={prd}
+                  provider={provider}
+                  model={model}
                   onPrdUpdate={persist}
                   onStarted={() => setStarted(true)}
                 />
@@ -102,6 +136,8 @@ export function CompanyBible() {
                 <PrdInterview
                   workspaceId={workspace.id}
                   prd={prd}
+                  provider={provider}
+                  model={model}
                   completeness={completeness}
                   onPrdUpdate={persist}
                   onComplete={() => setView("recommend")}
@@ -110,7 +146,11 @@ export function CompanyBible() {
               <PrdSections prd={prd} onChange={persist} />
             </div>
           ) : (
-            <PrdRecommendations workspaceId={workspace.id} />
+            <PrdRecommendations
+              workspaceId={workspace.id}
+              provider={provider}
+              model={model}
+            />
           )}
         </div>
       </div>

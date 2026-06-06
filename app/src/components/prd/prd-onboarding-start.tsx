@@ -25,11 +25,15 @@ const ROLE_VALUE: Record<(typeof ROLES)[number], string> = {
 export function PrdOnboardingStart({
   workspaceId,
   prd,
+  provider,
+  model,
   onPrdUpdate,
   onStarted,
 }: {
   workspaceId: string;
   prd: Prd;
+  provider: string;
+  model: string;
   onPrdUpdate: (next: Prd) => Promise<unknown>;
   onStarted: () => void;
 }) {
@@ -59,6 +63,8 @@ export function PrdOnboardingStart({
           prd: withRole,
           url: trimmedUrl || undefined,
           text: trimmedUrl ? undefined : docText,
+          provider,
+          model,
         },
         {
           // Persist the merged bible AND wait for the cache to update before

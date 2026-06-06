@@ -75,7 +75,15 @@ function StrategyCard({ rec }: { rec: StrategyRecommendation }) {
  * The mutation reads the persisted PRD on the engine, so the bible must be
  * saved (it is, on every edit / interview turn) before recommending.
  */
-export function PrdRecommendations({ workspaceId }: { workspaceId: string }) {
+export function PrdRecommendations({
+  workspaceId,
+  provider,
+  model,
+}: {
+  workspaceId: string;
+  provider: string;
+  model: string;
+}) {
   const { t } = useTranslation("prd");
   const recommend = usePrdRecommend(workspaceId);
   const data = recommend.data;
@@ -86,7 +94,7 @@ export function PrdRecommendations({ workspaceId }: { workspaceId: string }) {
         <p className="text-sm text-muted-foreground">{t("recommend.intro")}</p>
         <Button
           className="self-start"
-          onClick={() => recommend.mutate(undefined)}
+          onClick={() => recommend.mutate({ provider, model })}
           disabled={recommend.isPending}
         >
           {recommend.isPending ? (

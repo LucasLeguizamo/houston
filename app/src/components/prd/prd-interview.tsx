@@ -12,15 +12,22 @@ import { usePrdInterview } from "../../hooks/queries";
  * in (parent persists) and the model returns the next question. Errors toast via
  * the engine call wrapper, so a failed turn just lets the user retry.
  */
+/** Quick-insight cap: stop after this many questions even if the model has more. */
+const MAX_QUESTIONS = 10;
+
 export function PrdInterview({
   workspaceId,
   prd,
+  provider,
+  model,
   completeness,
   onPrdUpdate,
   onComplete,
 }: {
   workspaceId: string;
   prd: Prd;
+  provider: string;
+  model: string;
   completeness: number;
   onPrdUpdate: (next: Prd) => void;
   onComplete: () => void;
@@ -35,12 +42,14 @@ export function PrdInterview({
 
   const runTurn = (userAnswer: string) => {
     interview.mutate(
-      { prd, userAnswer },
+      { prd, userAnswer, provider, model },
       {
         onSuccess: (turn) => {
           onPrdUpdate(turn.prd);
           setAnswer("");
-          if (turn.complete || !turn.nextQuestion) {
+          // Stop when the model says so, or once we hit the question cap.
+          const nextStep = step + 1;
+          if (turn.complete || !turn.nextQuestion || nextStep > MAX_QUESTIONS) {
             setDone(true);
             setQuestion(null);
             setSuggestions([]);
@@ -49,7 +58,7 @@ export function PrdInterview({
           setDone(false);
           setQuestion(turn.nextQuestion);
           setSuggestions(turn.suggestions ?? []);
-          setStep((s) => s + 1);
+          setStep(nextStep);
         },
       },
     );
