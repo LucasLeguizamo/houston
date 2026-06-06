@@ -26,16 +26,15 @@ import {
   setField,
   type AskCard,
 } from "./prd-model";
-import { PrdHeader } from "./prd-header";
+import { PrdHeader, type View } from "./prd-header";
 import { PrdBibleTab } from "./prd-bible-tab";
+import { PrdStrategies } from "./prd-strategies";
 import { PrdRecommendations } from "./prd-recommendations";
 import { PrdAgentSidebar } from "./prd-agent-sidebar";
 import { PrdChat } from "./prd-chat";
 import { Centered } from "./prd-bits";
 import { downloadBible, parseBibleExport } from "./prd-export";
 import { useUIStore } from "../../stores/ui";
-
-type View = "bible" | "recommend";
 
 export function CompanyBible() {
   const { t } = useTranslation("prd");
@@ -50,26 +49,19 @@ export function CompanyBible() {
   const [view, setView] = useState<View>("bible");
   const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
   const [modelOverride, setModelOverride] = useState<string | null>(null);
-  const [injected, setInjected] = useState<(AskCard & { nonce: number }) | null>(
-    null,
-  );
-
+  const [injected, setInjected] = useState<(AskCard & { nonce: number }) | null>(null);
   const bibles = list?.bibles ?? [];
   const activeId = list?.activeId ?? "";
   const selected = selectedId ?? (activeId || bibles[0]?.id || "");
   const provider = workspace?.provider ?? "anthropic";
-  // Default to the provider's fast model for these one-shot PRD calls (the
-  // workspace may be pinned to a slow model like Opus, which times out on the
-  // bigger recommend/interview prompts). The user can still pick another above.
+  // Default to the provider's fast model (the workspace may be pinned to a slow
+  // one like Opus that times out on the bigger prompts); user can override above.
   const model = modelOverride ?? getDefaultModel(provider);
   const models = getProvider(provider)?.models ?? [];
   const { data: bibleData } = useBible(workspaceId, selected || undefined);
   const prd: Prd = bibleData ?? emptyPrd();
   const completeness = computeCompleteness(prd);
-
-  // Re-derive the per-bible view mode whenever the selected bible changes.
   useEffect(() => setMode(null), [selected]);
-
   if (!workspace) {
     return (
       <Centered>
@@ -80,7 +72,6 @@ export function CompanyBible() {
       </Centered>
     );
   }
-
   const newBible = () =>
     create.mutate(t("bibles.defaultName"), {
       onSuccess: (meta) => {
@@ -89,7 +80,6 @@ export function CompanyBible() {
         setView("bible");
       },
     });
-
   if (!isLoading && bibles.length === 0) {
     return (
       <Centered>
@@ -104,34 +94,24 @@ export function CompanyBible() {
       </Centered>
     );
   }
-
   const persist = (next: Prd) => save.mutateAsync({ bibleId: selected, prd: next });
   const effectiveMode = mode ?? (completeness === 0 && !prd.role ? "start" : "wiki");
-
   // Write a chat-produced value back into the bible card it was about.
   const applyToBible = (card: AskCard, content: string) => {
-    const cleaned = cleanProposedValue(content);
+    const c = cleanProposedValue(content);
     const value =
-      card.kind === "list"
-        ? cleaned.split("\n").map((l) => cleanProposedValue(l)).filter(Boolean)
-        : cleaned;
+      card.kind === "list" ? c.split("\n").map(cleanProposedValue).filter(Boolean) : c;
     void persist(setField(prd, card.section, card.field, value));
   };
-
   const importBible = (file: File) =>
-    file
-      .text()
-      .then(parseBibleExport)
-      .then(async (p) => {
-        const m = await create.mutateAsync(p.name);
-        await save.mutateAsync({ bibleId: m.id, prd: p.prd });
-        setSelectedId(m.id);
-        setMode("wiki");
-      })
-      .catch(() =>
-        useUIStore.getState().addToast({ title: t("bibles.importFailed"), variant: "error" }),
-      );
-
+    file.text().then(parseBibleExport).then(async (p) => {
+      const m = await create.mutateAsync(p.name);
+      await save.mutateAsync({ bibleId: m.id, prd: p.prd });
+      setSelectedId(m.id);
+      setMode("wiki");
+    }).catch(() =>
+      useUIStore.getState().addToast({ title: t("bibles.importFailed"), variant: "error" }),
+    );
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <PrdHeader
@@ -173,8 +153,16 @@ export function CompanyBible() {
               onAsk={(card) => setInjected({ ...card, nonce: Date.now() })}
               onComplete={() => {
                 setMode("wiki");
-                setView("recommend");
+                setView("strategies");
               }}
+            />
+          ) : view === "strategies" ? (
+            <PrdStrategies
+              workspaceId={workspace.id}
+              prd={prd}
+              provider={provider}
+              model={model}
+              persist={persist}
             />
           ) : (
             <PrdRecommendations
@@ -191,6 +179,11 @@ export function CompanyBible() {
           prd={prd}
           provider={provider}
           model={model}
+          onLinkAgents={(links) => {
+            const have = new Set(prd.agents?.map((a) => a.id) ?? []);
+            const added = links.filter((l) => !have.has(l.id));
+            if (added.length) void persist({ ...prd, agents: [...(prd.agents ?? []), ...added] });
+          }}
         />
       </div>
       <PrdChat

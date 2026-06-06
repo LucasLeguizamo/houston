@@ -5,6 +5,8 @@ import { Progress, Spinner } from "@houston-ai/core";
 import { ViewTab } from "./prd-bits";
 import { PrdBibleBar } from "./prd-bible-bar";
 
+export type View = "bible" | "recommend" | "strategies";
+
 /** Company Bible header: title, Bible/Recommendations tabs, the bible bar, and
  * the completeness meter. */
 export function PrdHeader({
@@ -14,8 +16,8 @@ export function PrdHeader({
   saving,
   bar,
 }: {
-  view: "bible" | "recommend";
-  onView: (v: "bible" | "recommend") => void;
+  view: View;
+  onView: (v: View) => void;
   completeness: number;
   saving: boolean;
   bar: ComponentProps<typeof PrdBibleBar>;
@@ -31,6 +33,9 @@ export function PrdHeader({
         <div className="flex items-center gap-1 rounded-lg bg-secondary p-1">
           <ViewTab active={view === "bible"} onClick={() => onView("bible")}>
             {t("tabs.bible")}
+          </ViewTab>
+          <ViewTab active={view === "strategies"} onClick={() => onView("strategies")}>
+            {t("tabs.strategies")}
           </ViewTab>
           <ViewTab active={view === "recommend"} onClick={() => onView("recommend")}>
             <Sparkles className="size-3.5" />

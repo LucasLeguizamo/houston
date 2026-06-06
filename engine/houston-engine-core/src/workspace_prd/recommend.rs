@@ -41,9 +41,25 @@ pub struct AgentRec {
 pub struct StrategyRec {
     /// "routine" or "skill".
     pub kind: String,
+    /// "improve" (sharpen the PRD) or "operate" (run the business on it).
+    #[serde(default)]
+    pub goal: String,
     pub title: String,
     pub description: String,
     pub reason: String,
+}
+
+/// A data integration to connect (e.g. Stripe financials, GitHub PRs), with a
+/// hint of what to pull on a schedule.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntegrationRec {
+    /// Composio toolkit slug, uppercased (e.g. "STRIPE", "GITHUB").
+    pub toolkit: String,
+    pub reason: String,
+    /// What to pull periodically (e.g. "weekly MRR + churn", "open PRs daily").
+    #[serde(default)]
+    pub periodic: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -51,6 +67,8 @@ pub struct StrategyRec {
 pub struct Recommendations {
     pub agents: Vec<AgentRec>,
     pub strategies: Vec<StrategyRec>,
+    #[serde(default)]
+    pub integrations: Vec<IntegrationRec>,
 }
 
 pub async fn recommend(
@@ -125,13 +143,19 @@ goals.{{northStar,objectives,successMetrics}},
 operations.{{team,painPoints}}, brand.{{voice,links}}.
 Pick the 2-5 cards most relevant to that agent's job.
 
-Also propose 2-4 concrete strategies the company should run: each is either a
-recurring "routine" (a scheduled task an agent does, e.g. a weekly pipeline
-review) or a "skill" (a repeatable play, e.g. drafting outreach). Keep titles
-short and descriptions to one sentence, no jargon.
+Also propose 3-6 concrete strategies. Each is a "routine" (scheduled task) or a
+"skill" (repeatable play), and has a "goal": "improve" (sharpen the PRD / fill
+gaps in the bible) or "operate" (run the business using it). Give a mix of both.
+Keep titles short and descriptions to one sentence, no jargon.
+
+Also suggest 2-4 data integrations to connect so the PRD stays live. Use Composio
+toolkit slugs (uppercase), e.g. STRIPE for financials/MRR/churn, GITHUB for repo
+PRs and releases, GOOGLEANALYTICS, HUBSPOT, STRIPE. For each give a reason and a
+"periodic" hint of what to pull on a schedule (e.g. "weekly MRR and churn",
+"open PRs daily").
 
 Return ONLY valid JSON (no markdown fences), shaped exactly like this:
-{{"agents":[{{"agentId":"sales","name":"Sales","reason":"...","matchedNeeds":["..."],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}}],"strategies":[{{"kind":"routine","title":"...","description":"...","reason":"..."}}]}}"#
+{{"agents":[{{"agentId":"sales","name":"Sales","reason":"...","matchedNeeds":["..."],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}}],"strategies":[{{"kind":"routine","goal":"operate","title":"...","description":"...","reason":"..."}}],"integrations":[{{"toolkit":"STRIPE","reason":"...","periodic":"weekly MRR and churn"}}]}}"#
     )
 }
 
@@ -188,7 +212,21 @@ fn parse_result(raw: &str) -> Result<Recommendations, String> {
         })
         .unwrap_or_default();
 
-    Ok(Recommendations { agents, strategies })
+    let integrations = v
+        .get("integrations")
+        .and_then(Value::as_array)
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|s| serde_json::from_value::<IntegrationRec>(s.clone()).ok())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Ok(Recommendations {
+        agents,
+        strategies,
+        integrations,
+    })
 }
 
 #[cfg(test)]
@@ -216,12 +254,14 @@ mod tests {
 
     #[test]
     fn parses_agents_and_strategies() {
-        let raw = r#"{"agents":[{"agentId":"sales","name":"Sales","reason":"r","matchedNeeds":["leads"],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}],"strategies":[{"kind":"routine","title":"Weekly review","description":"d","reason":"r"}]}"#;
+        let raw = r#"{"agents":[{"agentId":"sales","name":"Sales","reason":"r","matchedNeeds":["leads"],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}],"strategies":[{"kind":"routine","goal":"operate","title":"Weekly review","description":"d","reason":"r"}],"integrations":[{"toolkit":"STRIPE","reason":"r","periodic":"weekly MRR"}]}"#;
         let recs = parse_result(raw).unwrap();
         assert_eq!(recs.agents.len(), 1);
         assert_eq!(recs.agents[0].agent_id, "sales");
         assert_eq!(recs.agents[0].relevant_cards, vec!["market.idealCustomer", "operations.painPoints"]);
         assert_eq!(recs.strategies[0].kind, "routine");
+        assert_eq!(recs.strategies[0].goal, "operate");
+        assert_eq!(recs.integrations[0].toolkit, "STRIPE");
     }
 
     #[test]

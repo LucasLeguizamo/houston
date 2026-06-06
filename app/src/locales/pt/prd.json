@@ -3,7 +3,8 @@
   "completeness": "{{percent}}% completo",
   "tabs": {
     "bible": "Bíblia",
-    "recommend": "Recomendações"
+    "recommend": "Recomendações",
+    "strategies": "Estratégias"
   },
   "noWorkspace": {
     "title": "Nenhum espaço de trabalho selecionado",
@@ -157,7 +158,8 @@
     "generateCustom": "Gerar agente sob medida",
     "customName": "Agente sob medida",
     "createAll": "Criar todos",
-    "bibleSlice": "Sua parte da bíblia da empresa"
+    "bibleSlice": "Sua parte da bíblia da empresa",
+    "attached": "Agentes anexados"
   },
   "thinking": {
     "reading": "Lendo sua bíblia...",
@@ -166,5 +168,17 @@
     "applying": "Incorporando suas respostas...",
     "replying": "Pensando...",
     "extracting": "Lendo seu material..."
+  },
+  "strategies": {
+    "generate": "Gerar estratégias",
+    "regenerate": "Regenerar",
+    "progress": "{{percent}}% feito",
+    "empty": "Gere estratégias para melhorar e operar seu PRD.",
+    "improve": "Melhorar o PRD",
+    "operate": "Operar com ele"
+  },
+  "integrations": {
+    "title": "Conectar dados",
+    "connect": "Conectar"
   }
 }

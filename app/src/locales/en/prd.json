@@ -3,7 +3,8 @@
   "completeness": "{{percent}}% complete",
   "tabs": {
     "bible": "Bible",
-    "recommend": "Recommendations"
+    "recommend": "Recommendations",
+    "strategies": "Strategies"
   },
   "noWorkspace": {
     "title": "No workspace selected",
@@ -157,7 +158,8 @@
     "generateCustom": "Generate custom agent",
     "customName": "Custom agent",
     "createAll": "Create all",
-    "bibleSlice": "Your slice of the Company Bible"
+    "bibleSlice": "Your slice of the Company Bible",
+    "attached": "Attached agents"
   },
   "thinking": {
     "reading": "Reading your bible...",
@@ -166,5 +168,17 @@
     "applying": "Folding in your answers...",
     "replying": "Thinking...",
     "extracting": "Reading your material..."
+  },
+  "strategies": {
+    "generate": "Generate strategies",
+    "regenerate": "Regenerate",
+    "progress": "{{percent}}% done",
+    "empty": "Generate strategies to improve and operate your PRD.",
+    "improve": "Improve the PRD",
+    "operate": "Operate on it"
+  },
+  "integrations": {
+    "title": "Connect data",
+    "connect": "Connect"
   }
 }

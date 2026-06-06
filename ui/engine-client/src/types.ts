@@ -158,6 +158,24 @@ export interface CreateBibleRequest {
   name: string;
 }
 
+/** An agent created from a bible, kept attached in the right panel. */
+export interface AgentLink {
+  id: string;
+  name: string;
+  cards: string[];
+}
+
+/** A tracked strategy task on the bible. */
+export interface StrategyTask {
+  id: string;
+  kind: "routine" | "skill";
+  /** "improve" (sharpen the PRD) or "operate" (run the business on it). */
+  goal: "improve" | "operate" | string;
+  title: string;
+  description: string;
+  done: boolean;
+}
+
 export interface Prd {
   /** Stakeholder perspective: "founder" | "investor" | "pm" | "vp" | ... */
   role: string;
@@ -168,6 +186,10 @@ export interface Prd {
   goals: PrdGoals;
   operations: PrdOperations;
   brand: PrdBrand;
+  /** Agents created from this bible. */
+  agents: AgentLink[];
+  /** Tracked strategy tasks (improve / operate + done state). */
+  strategies: StrategyTask[];
 }
 
 export interface PrdQuestion {
@@ -240,14 +262,25 @@ export interface AgentRecommendation {
 
 export interface StrategyRecommendation {
   kind: "routine" | "skill";
+  /** "improve" or "operate". */
+  goal: string;
   title: string;
   description: string;
   reason: string;
 }
 
+export interface IntegrationRecommendation {
+  /** Composio toolkit slug, uppercase (e.g. "STRIPE", "GITHUB"). */
+  toolkit: string;
+  reason: string;
+  /** What to pull on a schedule. */
+  periodic: string;
+}
+
 export interface PrdRecommendations {
   agents: AgentRecommendation[];
   strategies: StrategyRecommendation[];
+  integrations: IntegrationRecommendation[];
 }
 
 // ---------- Workspace-scoped agent CRUD ----------

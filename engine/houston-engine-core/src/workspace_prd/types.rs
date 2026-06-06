@@ -19,6 +19,12 @@ pub struct Prd {
     pub goals: Goals,
     pub operations: Operations,
     pub brand: Brand,
+    /// Agents created from this bible (shown attached in the right panel).
+    #[serde(default)]
+    pub agents: Vec<AgentLink>,
+    /// Strategy tasks tracked for this bible (improve / operate + done state).
+    #[serde(default)]
+    pub strategies: Vec<StrategyTask>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -79,4 +85,30 @@ pub struct Operations {
 pub struct Brand {
     pub voice: String,
     pub links: Vec<String>,
+}
+
+/// An agent created from this bible, kept so the right panel can show it as
+/// permanently attached to this context.
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct AgentLink {
+    pub id: String,
+    pub name: String,
+    /// Bible cards ("section.field") this agent owns.
+    pub cards: Vec<String>,
+}
+
+/// A strategy task tracked on the bible. `goal` is "improve" (sharpen the PRD)
+/// or "operate" (run the business on it); `done` drives the PRD progress.
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct StrategyTask {
+    pub id: String,
+    /// "routine" or "skill".
+    pub kind: String,
+    /// "improve" or "operate".
+    pub goal: String,
+    pub title: String,
+    pub description: String,
+    pub done: bool,
 }

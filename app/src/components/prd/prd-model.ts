@@ -166,5 +166,14 @@ export function emptyPrd(): Prd {
     goals: { northStar: "", objectives: [], successMetrics: [] },
     operations: { team: "", painPoints: [] },
     brand: { voice: "", links: [] },
+    agents: [],
+    strategies: [],
   };
+}
+
+/** Share of tracked strategy tasks that are done (0–100), or null when none. */
+export function strategyProgress(prd: Prd): number | null {
+  const tasks = prd.strategies ?? [];
+  if (tasks.length === 0) return null;
+  return Math.round((tasks.filter((s) => s.done).length / tasks.length) * 100);
 }
