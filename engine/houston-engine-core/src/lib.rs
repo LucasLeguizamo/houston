@@ -22,6 +22,7 @@ pub mod state;
 pub mod store;
 pub mod worktree;
 pub mod workspace_context;
+pub mod workspace_prd;
 pub mod workspaces;
 
 pub use error::{CoreError, CoreResult};

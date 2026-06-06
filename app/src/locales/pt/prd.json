@@ -1,0 +1,84 @@
+{
+  "title": "Bíblia da empresa",
+  "completeness": "{{percent}}% completo",
+  "tabs": {
+    "bible": "Bíblia",
+    "recommend": "Recomendações"
+  },
+  "noWorkspace": {
+    "title": "Nenhum espaço de trabalho selecionado",
+    "description": "Escolha ou crie um espaço de trabalho para começar a bíblia da empresa."
+  },
+  "interview": {
+    "title": "Configuração guiada",
+    "intro": "Responda algumas perguntas rápidas e eu monto a bíblia da sua empresa para você.",
+    "start": "Iniciar configuração guiada",
+    "thinking": "Pensando...",
+    "complete": "Sua bíblia da empresa está sólida. Você pode continuar editando qualquer seção abaixo.",
+    "answerPlaceholder": "Digite sua resposta...",
+    "send": "Enviar"
+  },
+  "fields": {
+    "textPlaceholder": "Adicione detalhes...",
+    "listPlaceholder": "Um item por linha",
+    "company": {
+      "name": "Nome da empresa",
+      "oneLiner": "Pitch em uma linha",
+      "stage": "Estágio",
+      "industry": "Setor",
+      "website": "Site",
+      "mission": "Missão"
+    },
+    "product": {
+      "whatItIs": "O que é",
+      "problemSolved": "Problema que resolve",
+      "keyFeatures": "Recursos principais",
+      "differentiators": "O que o torna diferente"
+    },
+    "market": {
+      "idealCustomer": "Cliente ideal",
+      "competitors": "Concorrentes",
+      "positioning": "Posicionamento"
+    },
+    "businessModel": {
+      "pricing": "Preços",
+      "revenueStreams": "Fontes de receita",
+      "channels": "Canais"
+    },
+    "goals": {
+      "northStar": "Métrica norte",
+      "objectives": "Objetivos",
+      "successMetrics": "Métricas de sucesso"
+    },
+    "operations": {
+      "team": "Equipe",
+      "painPoints": "Pontos de dor"
+    },
+    "brand": {
+      "voice": "Voz da marca",
+      "links": "Links"
+    }
+  },
+  "sections": {
+    "company": "Empresa",
+    "product": "Produto",
+    "market": "Mercado",
+    "businessModel": "Modelo de negócio",
+    "goals": "Objetivos",
+    "operations": "Operações",
+    "brand": "Marca"
+  },
+  "recommend": {
+    "intro": "Com base na bíblia da sua empresa, estes são os agentes e estratégias que mais ajudariam.",
+    "generate": "Recomendar agentes",
+    "refresh": "Atualizar recomendações",
+    "addAgent": "Adicionar agente",
+    "agentsTitle": "Agentes recomendados",
+    "strategiesTitle": "Estratégias sugeridas",
+    "noAgents": "Ainda não há boas correspondências. Adicione mais detalhes à sua bíblia e tente de novo.",
+    "kind": {
+      "routine": "Rotina",
+      "skill": "Habilidade"
+    }
+  }
+}

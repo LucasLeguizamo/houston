@@ -121,6 +121,31 @@ export const tauriWorkspaces = {
     ),
 };
 
+// ─── Company Bible (PRD) ──────────────────────────────────────────────
+
+type Prd = import("@houston-ai/engine-client").Prd;
+type PrdInterviewRequest =
+  import("@houston-ai/engine-client").PrdInterviewRequest;
+type PrdInterviewTurn = import("@houston-ai/engine-client").PrdInterviewTurn;
+type PrdRecommendRequest =
+  import("@houston-ai/engine-client").PrdRecommendRequest;
+type PrdRecommendations =
+  import("@houston-ai/engine-client").PrdRecommendations;
+
+export const tauriPrd = {
+  get: (id: string) => call<Prd>("get_prd", () => getEngine().getPrd(id)),
+  save: (id: string, body: Prd) =>
+    call<Prd>("set_prd", () => getEngine().setPrd(id, body)),
+  interview: (id: string, body: PrdInterviewRequest) =>
+    call<PrdInterviewTurn>("prd_interview", () =>
+      getEngine().prdInterview(id, body),
+    ),
+  recommend: (id: string, body: PrdRecommendRequest = {}) =>
+    call<PrdRecommendations>("prd_recommend", () =>
+      getEngine().prdRecommend(id, body),
+    ),
+};
+
 // ─── Agents ───────────────────────────────────────────────────────────
 
 export interface CreateAgentResult {

@@ -21,7 +21,8 @@
     "needsYouCount_one": "{{count}} asunto necesita tu atención",
     "needsYouCount_other": "{{count}} asuntos necesitan tu atención",
     "runningCount_one": "{{count}} asunto en curso",
-    "runningCount_other": "{{count}} asuntos en curso"
+    "runningCount_other": "{{count}} asuntos en curso",
+    "companyBible": "Biblia de empresa"
   },
   "tabActions": {
     "newMission": "Nueva misión",

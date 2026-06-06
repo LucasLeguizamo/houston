@@ -72,6 +72,11 @@ import type {
   VersionResponse,
   Workspace,
   WorkspaceContext,
+  Prd,
+  PrdInterviewRequest,
+  PrdInterviewTurn,
+  PrdRecommendRequest,
+  PrdRecommendations,
   WorktreeInfo,
   PortableInventoryPreview,
   PortableExportRequest,
@@ -209,6 +214,21 @@ export class HoustonClient {
   }
   setWorkspaceContext(id: string, body: WorkspaceContext): Promise<WorkspaceContext> {
     return this.request("PUT", `/workspaces/${this.seg(id)}/context`, body);
+  }
+
+  // ---------- Company Bible (PRD) ----------
+
+  getPrd(id: string): Promise<Prd> {
+    return this.request("GET", `/workspaces/${this.seg(id)}/prd`);
+  }
+  setPrd(id: string, body: Prd): Promise<Prd> {
+    return this.request("PUT", `/workspaces/${this.seg(id)}/prd`, body);
+  }
+  prdInterview(id: string, body: PrdInterviewRequest): Promise<PrdInterviewTurn> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/interview`, body);
+  }
+  prdRecommend(id: string, body: PrdRecommendRequest = {}): Promise<PrdRecommendations> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/recommend`, body);
   }
 
   // ---------- workspace-scoped agents ----------

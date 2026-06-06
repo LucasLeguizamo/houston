@@ -94,6 +94,100 @@ export interface WorkspaceContext {
   user: string;
 }
 
+// ---------- Company Bible (PRD) ----------
+
+export interface PrdCompany {
+  name: string;
+  oneLiner: string;
+  stage: string;
+  industry: string;
+  website: string;
+  mission: string;
+}
+
+export interface PrdProduct {
+  whatItIs: string;
+  problemSolved: string;
+  keyFeatures: string[];
+  differentiators: string[];
+}
+
+export interface PrdMarket {
+  idealCustomer: string;
+  competitors: string[];
+  positioning: string;
+}
+
+export interface PrdBusinessModel {
+  pricing: string;
+  revenueStreams: string[];
+  channels: string[];
+}
+
+export interface PrdGoals {
+  northStar: string;
+  objectives: string[];
+  successMetrics: string[];
+}
+
+export interface PrdOperations {
+  team: string;
+  painPoints: string[];
+}
+
+export interface PrdBrand {
+  voice: string;
+  links: string[];
+}
+
+export interface Prd {
+  company: PrdCompany;
+  product: PrdProduct;
+  market: PrdMarket;
+  businessModel: PrdBusinessModel;
+  goals: PrdGoals;
+  operations: PrdOperations;
+  brand: PrdBrand;
+}
+
+export interface PrdInterviewRequest {
+  prd: Prd;
+  userAnswer?: string;
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdInterviewTurn {
+  prd: Prd;
+  nextQuestion?: string;
+  complete: boolean;
+}
+
+export interface PrdRecommendRequest {
+  provider?: string;
+  model?: string;
+}
+
+export interface AgentRecommendation {
+  agentId: string;
+  name: string;
+  reason: string;
+  matchedNeeds: string[];
+  relevance: number;
+}
+
+export interface StrategyRecommendation {
+  kind: "routine" | "skill";
+  title: string;
+  description: string;
+  reason: string;
+}
+
+export interface PrdRecommendations {
+  agents: AgentRecommendation[];
+  strategies: StrategyRecommendation[];
+}
+
 // ---------- Workspace-scoped agent CRUD ----------
 
 export interface Agent {

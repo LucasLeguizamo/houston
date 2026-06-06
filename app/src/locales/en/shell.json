@@ -21,7 +21,8 @@
     "needsYouCount_one": "{{count}} issue needs you",
     "needsYouCount_other": "{{count}} issues need you",
     "runningCount_one": "{{count}} issue running",
-    "runningCount_other": "{{count}} issues running"
+    "runningCount_other": "{{count}} issues running",
+    "companyBible": "Company Bible"
   },
   "tabActions": {
     "newMission": "New mission",

@@ -28,6 +28,10 @@ export const queryKeys = {
   chatHistory: (agentPath: string, sessionKey: string) =>
     ["chat-history", agentPath, sessionKey] as const,
 
+  // Workspace-scoped (reactive via mutation invalidation; no file watcher —
+  // the Company Bible lives at the workspace root, outside the agent watcher).
+  prd: (workspaceId: string) => ["prd", workspaceId] as const,
+
   // App-scoped (less reactive, loaded on init)
   connections: () => ["connections"] as const,
   composioApps: () => ["composio-apps"] as const,

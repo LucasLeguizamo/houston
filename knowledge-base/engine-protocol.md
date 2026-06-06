@@ -98,6 +98,10 @@ module.
 | PATCH | `/v1/workspaces/:id/provider` | Set provider/model |
 | GET | `/v1/workspaces/:id/context` | Read shared `WORKSPACE.md` + `USER.md` |
 | PUT | `/v1/workspaces/:id/context` | Write shared `WORKSPACE.md` + `USER.md` |
+| GET | `/v1/workspaces/:id/prd` | Read the Company Bible (`PRD.json`) |
+| PUT | `/v1/workspaces/:id/prd` | Write the Company Bible |
+| POST | `/v1/workspaces/:id/prd/interview` | One guided-interview turn: folds `{ prd, userAnswer }` into the bible, returns `{ prd, nextQuestion?, complete }` |
+| POST | `/v1/workspaces/:id/prd/recommend` | One-shot: saved bible + Store catalog, returns `{ agents[], strategies[] }` |
 | GET | `/v1/workspaces/:id/agents` | List agents in workspace |
 | POST | `/v1/workspaces/:id/agents` | Create agent |
 | DELETE | `/v1/workspaces/:id/agents/:agent_id` | Delete agent |

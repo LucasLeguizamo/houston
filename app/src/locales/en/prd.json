@@ -1,0 +1,84 @@
+{
+  "title": "Company Bible",
+  "completeness": "{{percent}}% complete",
+  "tabs": {
+    "bible": "Bible",
+    "recommend": "Recommendations"
+  },
+  "noWorkspace": {
+    "title": "No workspace selected",
+    "description": "Pick or create a workspace to start its company bible."
+  },
+  "interview": {
+    "title": "Guided setup",
+    "intro": "Answer a few quick questions and I'll build your company's bible for you.",
+    "start": "Start guided setup",
+    "thinking": "Thinking...",
+    "complete": "Your company bible looks solid. You can keep editing any section below.",
+    "answerPlaceholder": "Type your answer...",
+    "send": "Send"
+  },
+  "fields": {
+    "textPlaceholder": "Add details...",
+    "listPlaceholder": "One item per line",
+    "company": {
+      "name": "Company name",
+      "oneLiner": "One-line pitch",
+      "stage": "Stage",
+      "industry": "Industry",
+      "website": "Website",
+      "mission": "Mission"
+    },
+    "product": {
+      "whatItIs": "What it is",
+      "problemSolved": "Problem it solves",
+      "keyFeatures": "Key features",
+      "differentiators": "What makes it different"
+    },
+    "market": {
+      "idealCustomer": "Ideal customer",
+      "competitors": "Competitors",
+      "positioning": "Positioning"
+    },
+    "businessModel": {
+      "pricing": "Pricing",
+      "revenueStreams": "Revenue streams",
+      "channels": "Channels"
+    },
+    "goals": {
+      "northStar": "North-star metric",
+      "objectives": "Objectives",
+      "successMetrics": "Success metrics"
+    },
+    "operations": {
+      "team": "Team",
+      "painPoints": "Pain points"
+    },
+    "brand": {
+      "voice": "Brand voice",
+      "links": "Links"
+    }
+  },
+  "sections": {
+    "company": "Company",
+    "product": "Product",
+    "market": "Market",
+    "businessModel": "Business model",
+    "goals": "Goals",
+    "operations": "Operations",
+    "brand": "Brand"
+  },
+  "recommend": {
+    "intro": "Based on your company bible, here are the agents and strategies that would help most.",
+    "generate": "Recommend agents",
+    "refresh": "Refresh recommendations",
+    "addAgent": "Add agent",
+    "agentsTitle": "Recommended agents",
+    "strategiesTitle": "Suggested strategies",
+    "noAgents": "No strong matches yet. Add more detail to your bible and try again.",
+    "kind": {
+      "routine": "Routine",
+      "skill": "Skill"
+    }
+  }
+}
