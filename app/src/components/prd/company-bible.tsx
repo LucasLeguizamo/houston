@@ -46,7 +46,10 @@ export function CompanyBible() {
 
   const prd: Prd = data ?? emptyPrd();
   const completeness = computeCompleteness(prd);
-  const persist = (next: Prd) => save.mutate(next);
+  // Return the promise so callers (the onboarding start screen) can await the
+  // write — and the cache update — before handing off to the question flow,
+  // otherwise the first interview turn would run against the pre-ingest bible.
+  const persist = (next: Prd) => save.mutateAsync(next);
   // Show the role + ingest start screen only for a brand-new, untouched bible.
   const showStart = !started && !prd.role && completeness === 0;
 

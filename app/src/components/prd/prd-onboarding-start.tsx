@@ -30,7 +30,7 @@ export function PrdOnboardingStart({
 }: {
   workspaceId: string;
   prd: Prd;
-  onPrdUpdate: (next: Prd) => void;
+  onPrdUpdate: (next: Prd) => Promise<unknown>;
   onStarted: () => void;
 }) {
   const { t } = useTranslation("prd");
@@ -61,16 +61,20 @@ export function PrdOnboardingStart({
           text: trimmedUrl ? undefined : docText,
         },
         {
-          onSuccess: (merged) => {
-            onPrdUpdate(merged);
+          // Persist the merged bible AND wait for the cache to update before
+          // starting, so the first question reflects the ingested data.
+          onSuccess: async (merged) => {
+            await onPrdUpdate(merged);
             onStarted();
           },
         },
       );
       return;
     }
-    onPrdUpdate(withRole);
-    onStarted();
+    void (async () => {
+      await onPrdUpdate(withRole);
+      onStarted();
+    })();
   };
 
   return (

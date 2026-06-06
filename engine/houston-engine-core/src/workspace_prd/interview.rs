@@ -77,12 +77,18 @@ Do this:
    actually supports. NEVER invent facts the founder didn't give you. Keep
    existing content unless the answer clearly corrects it.
 2. Choose the SINGLE most valuable next question to ask, targeting the emptiest
-   or weakest area. Phrase it warmly, in plain language, no jargon, no mention
-   of files, fields, or JSON. One sentence.
+   or weakest area. NEVER ask about something the bible already answers (e.g.
+   don't ask what the company does if "product" or "company" is already filled)
+   — go deeper instead. Phrase it warmly, in plain language, no jargon, no
+   mention of files, fields, or JSON. One sentence.
 3. Offer 3 or 4 short example answers for that question in "suggestions" so the
-   user can tap one instead of typing. Each is at most 6 words, concrete, and
-   tailored to what you already know about this company. Use an empty array
-   only when there is no next question.
+   user can tap one instead of typing. Each is at most 6 words and must be
+   SPECIFIC to THIS company based on what the bible already says (and any
+   material that was ingested) — never generic placeholders like "a SaaS tool"
+   or "we automate invoicing" unless that is genuinely this company. If the
+   bible is still empty, base suggestions on the most likely reading of any
+   company name or website present. Use an empty array only when there is no
+   next question.
 4. If the bible already covers the company, product, market, business model,
    goals, and operations well enough to be useful, set "complete" to true and
    set "nextQuestion" to null.
