@@ -82,6 +82,7 @@ import type {
   PrdRecommendRequest,
   PrdRecommendations,
   PrdIngestRequest,
+  PrdChatRequest,
   WorktreeInfo,
   PortableInventoryPreview,
   PortableExportRequest,
@@ -263,6 +264,14 @@ export class HoustonClient {
   }
   prdIngest(id: string, body: PrdIngestRequest): Promise<Prd> {
     return this.request("POST", `/workspaces/${this.seg(id)}/prd/ingest`, body);
+  }
+  async prdChat(id: string, body: PrdChatRequest): Promise<string> {
+    const res = await this.request<{ reply: string }>(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/chat`,
+      body,
+    );
+    return res.reply;
   }
 
   // ---------- workspace-scoped agents ----------

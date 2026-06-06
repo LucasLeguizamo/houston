@@ -17,6 +17,7 @@
 use crate::error::CoreResult;
 use std::path::{Path, PathBuf};
 
+pub mod chat;
 pub mod ingest;
 pub mod interview;
 pub mod library;

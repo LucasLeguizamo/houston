@@ -3,13 +3,11 @@ import { useTranslation } from "react-i18next";
 import { BookOpen, Plus, Sparkles } from "lucide-react";
 import {
   Button,
-  Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
   Progress,
   Spinner,
-  cn,
 } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
 import { useWorkspaceStore } from "../../stores/workspaces";
@@ -26,6 +24,8 @@ import { computeCompleteness, emptyPrd } from "./prd-model";
 import { PrdBibleBar } from "./prd-bible-bar";
 import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
+import { PrdChat } from "./prd-chat";
+import { Centered, ViewTab } from "./prd-bits";
 import { downloadBible } from "./prd-export";
 
 type View = "bible" | "recommend";
@@ -43,6 +43,7 @@ export function CompanyBible() {
   const [view, setView] = useState<View>("bible");
   const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
   const [modelOverride, setModelOverride] = useState<string | null>(null);
+  const [injected, setInjected] = useState<{ text: string; nonce: number } | null>(null);
 
   const bibles = list?.bibles ?? [];
   const activeId = list?.activeId ?? "";
@@ -151,6 +152,12 @@ export function CompanyBible() {
               mode={effectiveMode}
               onMode={setMode}
               persist={persist}
+              onAsk={(label, value) =>
+                setInjected({
+                  text: t("chat.askAbout", { label, value }),
+                  nonce: Date.now(),
+                })
+              }
               onComplete={() => {
                 setMode("wiki");
                 setView("recommend");
@@ -166,35 +173,14 @@ export function CompanyBible() {
           )}
         </div>
       </div>
+      <PrdChat
+        workspaceId={workspace.id}
+        prd={prd}
+        provider={provider}
+        model={model}
+        injected={injected}
+        onInjectedConsumed={() => setInjected(null)}
+      />
     </div>
-  );
-}
-
-function Centered({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex flex-1 items-center justify-center p-8">
-      <Empty>{children}</Empty>
-    </div>
-  );
-}
-
-function ViewTab({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={onClick}
-      className={cn("h-7 gap-1.5 px-3 text-xs", active && "bg-background shadow-sm")}
-    >
-      {children}
-    </Button>
   );
 }

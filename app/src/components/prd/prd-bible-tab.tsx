@@ -17,6 +17,7 @@ export function PrdBibleTab({
   mode,
   onMode,
   persist,
+  onAsk,
   onComplete,
 }: {
   workspaceId: string;
@@ -26,6 +27,7 @@ export function PrdBibleTab({
   mode: Mode;
   onMode: (m: Mode) => void;
   persist: (next: Prd) => Promise<unknown>;
+  onAsk: (label: string, value: string) => void;
   onComplete: () => void;
 }) {
   const { t } = useTranslation("prd");
@@ -54,7 +56,7 @@ export function PrdBibleTab({
           onPrdUpdate={persist}
           onComplete={onComplete}
         />
-        <PrdWiki prd={prd} onChange={persist} />
+        <PrdWiki prd={prd} onChange={persist} onAsk={onAsk} />
       </div>
     );
   }
@@ -72,7 +74,7 @@ export function PrdBibleTab({
           {t("wiki.improve")}
         </Button>
       </div>
-      <PrdWiki prd={prd} onChange={persist} />
+      <PrdWiki prd={prd} onChange={persist} onAsk={onAsk} />
     </div>
   );
 }

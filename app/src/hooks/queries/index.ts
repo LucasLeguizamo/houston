@@ -46,4 +46,5 @@ export {
   usePrdApplyAnswers,
   usePrdIngest,
   usePrdRecommend,
+  usePrdChat,
 } from "./use-prd";

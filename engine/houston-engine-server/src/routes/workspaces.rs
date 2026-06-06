@@ -9,6 +9,7 @@ use axum::{
 };
 use houston_engine_core::agents_crud::{self, Agent, CreateAgent, CreateAgentResult, UpdateAgent};
 use houston_engine_core::workspace_context::{self, WorkspaceContext};
+use houston_engine_core::workspace_prd::chat::{chat as prd_chat_fn, ChatMessage};
 use houston_engine_core::workspace_prd::ingest::{fetch_url_text, ingest};
 use houston_engine_core::workspace_prd::interview::{
     apply_answers, generate_questions, Answer, Question,
@@ -47,6 +48,7 @@ pub fn router() -> Router<Arc<ServerState>> {
         .route("/workspaces/:id/prd/answers", post(prd_answers))
         .route("/workspaces/:id/prd/recommend", post(prd_recommend))
         .route("/workspaces/:id/prd/ingest", post(prd_ingest))
+        .route("/workspaces/:id/prd/chat", post(prd_chat))
         // Workspace-scoped agents CRUD.
         .route(
             "/workspaces/:id/agents",
@@ -297,6 +299,36 @@ struct PrdIngestBody {
     provider: Option<String>,
     #[serde(default)]
     model: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PrdChatBody {
+    prd: Prd,
+    #[serde(default)]
+    messages: Vec<ChatMessage>,
+    message: String,
+    #[serde(default)]
+    provider: Option<String>,
+    #[serde(default)]
+    model: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PrdChatResponse {
+    reply: String,
+}
+
+async fn prd_chat(
+    State(_st): State<Arc<ServerState>>,
+    Path(_id): Path<String>,
+    Json(body): Json<PrdChatBody>,
+) -> Result<Json<PrdChatResponse>, ApiError> {
+    let (provider, model) = resolve_oneshot(body.provider, body.model)?;
+    let reply =
+        prd_chat_fn(&body.prd, &body.messages, &body.message, provider, model.as_deref()).await?;
+    Ok(Json(PrdChatResponse { reply }))
 }
 
 async fn prd_ingest(

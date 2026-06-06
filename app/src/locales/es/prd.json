@@ -111,7 +111,8 @@
   "wiki": {
     "subtitle": "Todo lo que sabemos de tu empresa, en un solo lugar. Toca cualquier tarjeta para editar.",
     "empty": "Sin completar",
-    "improve": "Mejorar con IA"
+    "improve": "Mejorar con IA",
+    "ask": "Pregúntale a Houston sobre esto"
   },
   "bibles": {
     "defaultName": "Biblia de empresa",
@@ -122,5 +123,11 @@
     "export": "Exportar",
     "emptyTitle": "Aún no hay biblias",
     "emptyBody": "Crea tu primera biblia de contexto para capturar todo sobre un producto o empresa."
+  },
+  "chat": {
+    "title": "Pregúntale a Houston",
+    "placeholder": "Pregunta sobre tu biblia, o cómo implementar algo...",
+    "send": "Enviar",
+    "askAbout": "Sobre \"{{label}}\": {{value}}. ¿Cómo deberíamos implementarlo o mejorarlo?"
   }
 }

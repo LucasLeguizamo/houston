@@ -111,7 +111,8 @@
   "wiki": {
     "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
     "empty": "Not added yet",
-    "improve": "Improve with AI"
+    "improve": "Improve with AI",
+    "ask": "Ask Houston about this"
   },
   "bibles": {
     "defaultName": "Company Bible",
@@ -122,5 +123,11 @@
     "export": "Export",
     "emptyTitle": "No bibles yet",
     "emptyBody": "Create your first context bible to capture everything about a product or company."
+  },
+  "chat": {
+    "title": "Ask Houston",
+    "placeholder": "Ask about your bible, or how to implement something...",
+    "send": "Send",
+    "askAbout": "About \"{{label}}\": {{value}}. How should we implement or improve this?"
   }
 }

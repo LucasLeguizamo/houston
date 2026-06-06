@@ -4,6 +4,7 @@ import type {
   BibleMeta,
   Prd,
   PrdApplyAnswersRequest,
+  PrdChatRequest,
   PrdIngestRequest,
   PrdQuestion,
   PrdQuestionsRequest,
@@ -118,6 +119,15 @@ export function usePrdRecommend(
   return useMutation({
     mutationFn: (body: PrdRecommendRequest) =>
       tauriPrd.recommend(workspaceId!, body),
+  });
+}
+
+/** One Houston chat turn grounded in a bible. Returns the assistant reply. */
+export function usePrdChat(
+  workspaceId: string | undefined,
+): ReturnType<typeof useMutation<string, Error, PrdChatRequest>> {
+  return useMutation({
+    mutationFn: (body: PrdChatRequest) => tauriPrd.chat(workspaceId!, body),
   });
 }
 

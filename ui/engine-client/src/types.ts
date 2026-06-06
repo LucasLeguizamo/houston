@@ -201,6 +201,20 @@ export interface PrdRecommendRequest {
   model?: string;
 }
 
+export interface PrdChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface PrdChatRequest {
+  /** The bible the chat is grounded in (the active one). */
+  prd: Prd;
+  messages: PrdChatMessage[];
+  message: string;
+  provider?: string;
+  model?: string;
+}
+
 export interface PrdIngestRequest {
   /** The client's current bible; the merged copy is returned to be saved. */
   prd: Prd;

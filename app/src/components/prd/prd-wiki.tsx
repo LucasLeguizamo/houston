@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Building2,
@@ -8,19 +8,13 @@ import {
   Target,
   Cog,
   Palette,
+  MessageSquarePlus,
   type LucideIcon,
 } from "lucide-react";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  cn,
-} from "@houston-ai/core";
+import { cn } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
-import { SECTIONS, getField, isFieldFilled, setField } from "./prd-model";
+import { SECTIONS, getField, isFieldFilled } from "./prd-model";
+import { FieldDialog } from "./prd-field-dialog";
 
 const SECTION_ICON: Record<string, LucideIcon> = {
   company: Building2,
@@ -46,9 +40,12 @@ function preview(value: string | string[]): string {
 export function PrdWiki({
   prd,
   onChange,
+  onAsk,
 }: {
   prd: Prd;
   onChange: (next: Prd) => void;
+  /** Send a field to the Houston chat ("how should we implement this?"). */
+  onAsk?: (label: string, value: string) => void;
 }) {
   const { t } = useTranslation("prd");
   const [editing, setEditing] = useState<{ section: string; field: string; kind: "text" | "list" } | null>(null);
@@ -71,36 +68,47 @@ export function PrdWiki({
               {section.fields.map((field) => {
                 const value = getField(prd, section.id, field.key);
                 const filled = isFieldFilled(value);
+                const label = t(`fields.${section.id}.${field.key}`);
                 return (
-                  <button
+                  <div
                     key={field.key}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() =>
-                      setEditing({
-                        section: section.id,
-                        field: field.key,
-                        kind: field.kind,
-                      })
+                      setEditing({ section: section.id, field: field.key, kind: field.kind })
                     }
                     className={cn(
-                      "flex flex-col gap-1.5 rounded-xl border border-border bg-card p-4 text-left",
-                      "transition-colors hover:border-primary/30 hover:bg-primary/[0.03]",
+                      "group relative flex flex-col gap-1.5 rounded-xl border border-border bg-card p-4 text-left",
+                      "cursor-pointer transition-colors hover:border-primary/30 hover:bg-primary/[0.03]",
                     )}
                   >
-                    <span className="text-sm font-medium">
-                      {t(`fields.${section.id}.${field.key}`)}
-                    </span>
+                    <span className="text-sm font-medium">{label}</span>
                     <span
                       className={cn(
                         "line-clamp-3 text-sm",
-                        filled
-                          ? "text-muted-foreground"
-                          : "italic text-muted-foreground/50",
+                        filled ? "text-muted-foreground" : "italic text-muted-foreground/50",
                       )}
                     >
                       {filled ? preview(value) : t("wiki.empty")}
                     </span>
-                  </button>
+                    {onAsk && filled && (
+                      <button
+                        type="button"
+                        aria-label={t("wiki.ask")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAsk(label, preview(value));
+                        }}
+                        className={cn(
+                          "absolute right-2 top-2 rounded-full p-1.5 text-muted-foreground",
+                          "opacity-60 transition-opacity hover:bg-primary/10 hover:text-primary",
+                          "group-hover:opacity-100",
+                        )}
+                      >
+                        <MessageSquarePlus className="size-4" />
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -122,72 +130,5 @@ export function PrdWiki({
         />
       )}
     </div>
-  );
-}
-
-function FieldDialog({
-  prd,
-  section,
-  field,
-  kind,
-  onClose,
-  onSave,
-}: {
-  prd: Prd;
-  section: string;
-  field: string;
-  kind: "text" | "list";
-  onClose: () => void;
-  onSave: (next: Prd) => void;
-}) {
-  const { t } = useTranslation(["prd", "common"]);
-  const raw = getField(prd, section, field);
-  const [value, setValue] = useState(Array.isArray(raw) ? raw.join("\n") : raw);
-
-  useEffect(() => {
-    setValue(Array.isArray(raw) ? raw.join("\n") : raw);
-  }, [raw]);
-
-  const save = () => {
-    const next =
-      kind === "list"
-        ? setField(
-            prd,
-            section,
-            field,
-            value.split("\n").map((l) => l.trim()).filter(Boolean),
-          )
-        : setField(prd, section, field, value);
-    onSave(next);
-  };
-
-  return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t(`fields.${section}.${field}`)}</DialogTitle>
-        </DialogHeader>
-        <textarea
-          autoFocus
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={
-            kind === "list" ? t("fields.listPlaceholder") : t("fields.textPlaceholder")
-          }
-          rows={kind === "list" ? 6 : 4}
-          className={cn(
-            "w-full resize-none rounded-lg border border-black/[0.06] bg-background",
-            "px-3 py-2 text-sm leading-relaxed outline-none",
-            "placeholder:text-muted-foreground/60 focus:shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
-          )}
-        />
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>
-            {t("common:actions.cancel")}
-          </Button>
-          <Button onClick={save}>{t("common:actions.save")}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

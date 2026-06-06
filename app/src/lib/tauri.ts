@@ -138,6 +138,7 @@ type PrdRecommendRequest =
 type PrdRecommendations =
   import("@houston-ai/engine-client").PrdRecommendations;
 type PrdIngestRequest = import("@houston-ai/engine-client").PrdIngestRequest;
+type PrdChatRequest = import("@houston-ai/engine-client").PrdChatRequest;
 
 export const tauriPrd = {
   listBibles: (id: string) =>
@@ -164,6 +165,8 @@ export const tauriPrd = {
     ),
   ingest: (id: string, body: PrdIngestRequest) =>
     call<Prd>("prd_ingest", () => getEngine().prdIngest(id, body)),
+  chat: (id: string, body: PrdChatRequest) =>
+    call<string>("prd_chat", () => getEngine().prdChat(id, body)),
 };
 
 // ─── Agents ───────────────────────────────────────────────────────────
