@@ -16,6 +16,11 @@ export interface Workspace {
    * Absent/null means the workspace inherits the global `locale` preference.
    */
   locale?: string | null;
+  /** Provider pinned to this workspace (e.g. "anthropic"). Used by the Company
+   * Bible onboarding to run its one-shot calls on the right CLI. */
+  provider?: string;
+  /** Model pinned to this workspace. */
+  model?: string;
 }
 
 /** Agent category for Houston Store filtering */

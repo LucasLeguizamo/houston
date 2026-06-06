@@ -1,0 +1,184 @@
+{
+  "title": "Biblia de empresa",
+  "completeness": "{{percent}}% completo",
+  "tabs": {
+    "bible": "Biblia",
+    "recommend": "Recomendaciones",
+    "strategies": "Estrategias"
+  },
+  "noWorkspace": {
+    "title": "Sin espacio de trabajo seleccionado",
+    "description": "Elige o crea un espacio de trabajo para empezar su biblia de empresa."
+  },
+  "roles": {
+    "founder": "Fundador",
+    "cLevel": "Nivel C",
+    "vp": "VP",
+    "pm": "Product manager",
+    "investor": "Inversionista",
+    "operator": "Operador"
+  },
+  "start": {
+    "title": "Configuremos la biblia de tu empresa",
+    "body": "Primero, ¿quién eres? Adapto las preguntas a lo que importa para tu rol.",
+    "roleQuestion": "¿Cuál es tu rol?",
+    "ingestTitle": "Acelera (opcional)",
+    "ingestBody": "Agrega tu sitio web o un documento y pre-lleno lo que pueda.",
+    "urlPlaceholder": "https://tuempresa.com",
+    "uploadDoc": "Subir un documento",
+    "docNote": "Los archivos de texto funcionan mejor (.txt, .md). PDF próximamente.",
+    "continue": "Continuar",
+    "skip": "Omitir",
+    "ingesting": "Leyendo tu material..."
+  },
+  "interview": {
+    "preparing": "Preparando tus preguntas...",
+    "building": "Construyendo la biblia de tu empresa...",
+    "stepOf": "Pregunta {{step}} de {{total}}",
+    "suggestionsHint": "Elige una o escribe la tuya",
+    "orType": "O escribe tu respuesta...",
+    "skipQuestion": "Omitir",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "doneTitle": "Tu biblia de empresa está lista",
+    "complete": "Buen trabajo. Puedes seguir editando cualquier sección abajo, o ver qué agentes encajan con tu empresa.",
+    "viewRecommendations": "Ver recomendaciones",
+    "failed": "No se pudieron preparar tus preguntas."
+  },
+  "fields": {
+    "textPlaceholder": "Agrega detalles...",
+    "listPlaceholder": "Un elemento por línea",
+    "company": {
+      "name": "Nombre de la empresa",
+      "oneLiner": "Pitch en una línea",
+      "stage": "Etapa",
+      "industry": "Industria",
+      "website": "Sitio web",
+      "mission": "Misión"
+    },
+    "product": {
+      "whatItIs": "Qué es",
+      "problemSolved": "Problema que resuelve",
+      "keyFeatures": "Funciones clave",
+      "differentiators": "Qué lo hace diferente"
+    },
+    "market": {
+      "idealCustomer": "Cliente ideal",
+      "competitors": "Competidores",
+      "positioning": "Posicionamiento"
+    },
+    "businessModel": {
+      "pricing": "Precios",
+      "revenueStreams": "Fuentes de ingreso",
+      "channels": "Canales"
+    },
+    "goals": {
+      "northStar": "Métrica norte",
+      "objectives": "Objetivos",
+      "successMetrics": "Métricas de éxito"
+    },
+    "operations": {
+      "team": "Equipo",
+      "painPoints": "Puntos de dolor"
+    },
+    "brand": {
+      "voice": "Voz de marca",
+      "links": "Enlaces"
+    }
+  },
+  "sections": {
+    "company": "Empresa",
+    "product": "Producto",
+    "market": "Mercado",
+    "businessModel": "Modelo de negocio",
+    "goals": "Objetivos",
+    "operations": "Operaciones",
+    "brand": "Marca"
+  },
+  "recommend": {
+    "intro": "Según la biblia de tu empresa, estos son los agentes y estrategias que más ayudarían.",
+    "generate": "Recomendar agentes",
+    "refresh": "Actualizar recomendaciones",
+    "addAgent": "Agregar agente",
+    "agentsTitle": "Agentes recomendados",
+    "strategiesTitle": "Estrategias sugeridas",
+    "noAgents": "Aún no hay coincidencias fuertes. Agrega más detalle a tu biblia e intenta de nuevo.",
+    "kind": {
+      "routine": "Rutina",
+      "skill": "Habilidad"
+    }
+  },
+  "modelLabel": "Modelo",
+  "wiki": {
+    "subtitle": "Todo lo que sabemos de tu empresa, en un solo lugar. Toca cualquier tarjeta para editar.",
+    "empty": "Sin completar",
+    "improve": "Mejorar con IA",
+    "edit": "Editar"
+  },
+  "bibles": {
+    "defaultName": "Biblia de empresa",
+    "create": "Nueva biblia",
+    "setActive": "Marcar activa",
+    "activeTag": "Activa",
+    "delete": "Eliminar biblia",
+    "export": "Exportar",
+    "emptyTitle": "Aún no hay biblias",
+    "emptyBody": "Crea tu primera biblia de contexto para capturar todo sobre un producto o empresa.",
+    "import": "Importar",
+    "importFailed": "No se pudo importar ese archivo."
+  },
+  "chat": {
+    "title": "Pregúntale a Houston",
+    "placeholder": "Pregunta sobre tu biblia, o cómo implementar algo...",
+    "send": "Enviar",
+    "actions": {
+      "autocomplete": "Autocompletar",
+      "modify": "Modificar",
+      "extend": "Extender"
+    },
+    "removeContext": "Quitar",
+    "placeholderContext": "Dile a Houston qué cambiar, o elige una acción arriba...",
+    "update": "Actualizar {{label}}",
+    "updated": "Actualizado",
+    "presets": {
+      "autocomplete": "Autocompleta esta tarjeta",
+      "modify": "Modifica esta tarjeta para ",
+      "extend": "Extiende esta tarjeta con "
+    },
+    "clear": "Limpiar"
+  },
+  "sidebar": {
+    "title": "Agentes sugeridos",
+    "intro": "Convierte tu biblia en agentes: instala uno que encaje o genera uno a medida.",
+    "suggest": "Sugerir agentes",
+    "refresh": "Actualizar",
+    "create": "Crear",
+    "added": "Agregado",
+    "created": "{{name}} agregado",
+    "generateCustom": "Generar agente a medida",
+    "customName": "Agente a medida",
+    "createAll": "Crear todos",
+    "bibleSlice": "Tu parte de la biblia de empresa",
+    "attached": "Agentes anexados"
+  },
+  "thinking": {
+    "reading": "Leyendo tu biblia...",
+    "matching": "Emparejando agentes con tus necesidades...",
+    "drafting": "Redactando sugerencias...",
+    "applying": "Integrando tus respuestas...",
+    "replying": "Pensando...",
+    "extracting": "Leyendo tu material..."
+  },
+  "strategies": {
+    "generate": "Generar estrategias",
+    "regenerate": "Regenerar",
+    "progress": "{{percent}}% hecho",
+    "empty": "Genera estrategias para mejorar y operar tu PRD.",
+    "improve": "Mejorar el PRD",
+    "operate": "Operar con él"
+  },
+  "integrations": {
+    "title": "Conectar datos",
+    "connect": "Conectar"
+  }
+}

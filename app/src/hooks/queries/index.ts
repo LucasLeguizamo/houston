@@ -35,3 +35,16 @@ export {
   useRemoveLearning,
   useUpdateLearning,
 } from "./use-learnings";
+export {
+  useBibles,
+  useBible,
+  useCreateBible,
+  useSaveBible,
+  useDeleteBible,
+  useActivateBible,
+  usePrdQuestions,
+  usePrdApplyAnswers,
+  usePrdIngest,
+  usePrdRecommend,
+  usePrdChat,
+} from "./use-prd";

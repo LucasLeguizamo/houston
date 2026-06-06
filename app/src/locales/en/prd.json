@@ -1,0 +1,184 @@
+{
+  "title": "Company Bible",
+  "completeness": "{{percent}}% complete",
+  "tabs": {
+    "bible": "Bible",
+    "recommend": "Recommendations",
+    "strategies": "Strategies"
+  },
+  "noWorkspace": {
+    "title": "No workspace selected",
+    "description": "Pick or create a workspace to start its company bible."
+  },
+  "roles": {
+    "founder": "Founder",
+    "cLevel": "C-level",
+    "vp": "VP",
+    "pm": "Product manager",
+    "investor": "Investor",
+    "operator": "Operator"
+  },
+  "start": {
+    "title": "Let's set up your company bible",
+    "body": "First, who are you? I'll tailor the questions to what matters for your role.",
+    "roleQuestion": "What's your role?",
+    "ingestTitle": "Speed it up (optional)",
+    "ingestBody": "Add your website or a document and I'll pre-fill what I can.",
+    "urlPlaceholder": "https://yourcompany.com",
+    "uploadDoc": "Upload a document",
+    "docNote": "Text files work best (.txt, .md). PDFs coming soon.",
+    "continue": "Continue",
+    "skip": "Skip",
+    "ingesting": "Reading your material..."
+  },
+  "interview": {
+    "preparing": "Preparing your questions...",
+    "building": "Building your company bible...",
+    "stepOf": "Question {{step}} of {{total}}",
+    "suggestionsHint": "Pick one or write your own",
+    "orType": "Or type your answer...",
+    "skipQuestion": "Skip",
+    "continue": "Continue",
+    "finish": "Finish",
+    "doneTitle": "Your company bible is ready",
+    "complete": "Nice work. You can keep editing any section below, or see which agents fit your company.",
+    "viewRecommendations": "See recommendations",
+    "failed": "Couldn't prepare your questions."
+  },
+  "fields": {
+    "textPlaceholder": "Add details...",
+    "listPlaceholder": "One item per line",
+    "company": {
+      "name": "Company name",
+      "oneLiner": "One-line pitch",
+      "stage": "Stage",
+      "industry": "Industry",
+      "website": "Website",
+      "mission": "Mission"
+    },
+    "product": {
+      "whatItIs": "What it is",
+      "problemSolved": "Problem it solves",
+      "keyFeatures": "Key features",
+      "differentiators": "What makes it different"
+    },
+    "market": {
+      "idealCustomer": "Ideal customer",
+      "competitors": "Competitors",
+      "positioning": "Positioning"
+    },
+    "businessModel": {
+      "pricing": "Pricing",
+      "revenueStreams": "Revenue streams",
+      "channels": "Channels"
+    },
+    "goals": {
+      "northStar": "North-star metric",
+      "objectives": "Objectives",
+      "successMetrics": "Success metrics"
+    },
+    "operations": {
+      "team": "Team",
+      "painPoints": "Pain points"
+    },
+    "brand": {
+      "voice": "Brand voice",
+      "links": "Links"
+    }
+  },
+  "sections": {
+    "company": "Company",
+    "product": "Product",
+    "market": "Market",
+    "businessModel": "Business model",
+    "goals": "Goals",
+    "operations": "Operations",
+    "brand": "Brand"
+  },
+  "recommend": {
+    "intro": "Based on your company bible, here are the agents and strategies that would help most.",
+    "generate": "Recommend agents",
+    "refresh": "Refresh recommendations",
+    "addAgent": "Add agent",
+    "agentsTitle": "Recommended agents",
+    "strategiesTitle": "Suggested strategies",
+    "noAgents": "No strong matches yet. Add more detail to your bible and try again.",
+    "kind": {
+      "routine": "Routine",
+      "skill": "Skill"
+    }
+  },
+  "modelLabel": "Model",
+  "wiki": {
+    "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
+    "empty": "Not added yet",
+    "improve": "Improve with AI",
+    "edit": "Edit"
+  },
+  "bibles": {
+    "defaultName": "Company Bible",
+    "create": "New bible",
+    "setActive": "Set active",
+    "activeTag": "Active",
+    "delete": "Delete bible",
+    "export": "Export",
+    "emptyTitle": "No bibles yet",
+    "emptyBody": "Create your first context bible to capture everything about a product or company.",
+    "import": "Import",
+    "importFailed": "Couldn't import that file."
+  },
+  "chat": {
+    "title": "Ask Houston",
+    "placeholder": "Ask about your bible, or how to implement something...",
+    "send": "Send",
+    "actions": {
+      "autocomplete": "Autocomplete",
+      "modify": "Modify",
+      "extend": "Extend"
+    },
+    "removeContext": "Remove",
+    "placeholderContext": "Tell Houston what to change, or pick an action above...",
+    "update": "Update {{label}}",
+    "updated": "Updated",
+    "presets": {
+      "autocomplete": "Autocomplete this card",
+      "modify": "Modify this card to ",
+      "extend": "Extend this card with "
+    },
+    "clear": "Clear"
+  },
+  "sidebar": {
+    "title": "Suggested agents",
+    "intro": "Turn your bible into agents. Install a matching one or generate a custom one.",
+    "suggest": "Suggest agents",
+    "refresh": "Refresh",
+    "create": "Create",
+    "added": "Added",
+    "created": "Added {{name}}",
+    "generateCustom": "Generate custom agent",
+    "customName": "Custom agent",
+    "createAll": "Create all",
+    "bibleSlice": "Your slice of the Company Bible",
+    "attached": "Attached agents"
+  },
+  "thinking": {
+    "reading": "Reading your bible...",
+    "matching": "Matching agents to your needs...",
+    "drafting": "Drafting suggestions...",
+    "applying": "Folding in your answers...",
+    "replying": "Thinking...",
+    "extracting": "Reading your material..."
+  },
+  "strategies": {
+    "generate": "Generate strategies",
+    "regenerate": "Regenerate",
+    "progress": "{{percent}}% done",
+    "empty": "Generate strategies to improve and operate your PRD.",
+    "improve": "Improve the PRD",
+    "operate": "Operate on it"
+  },
+  "integrations": {
+    "title": "Connect data",
+    "connect": "Connect"
+  }
+}

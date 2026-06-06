@@ -121,6 +121,54 @@ export const tauriWorkspaces = {
     ),
 };
 
+// ─── Company Bible (PRD) ──────────────────────────────────────────────
+
+type Prd = import("@houston-ai/engine-client").Prd;
+type BibleList = import("@houston-ai/engine-client").BibleList;
+type BibleMeta = import("@houston-ai/engine-client").BibleMeta;
+type CreateBibleRequest =
+  import("@houston-ai/engine-client").CreateBibleRequest;
+type PrdQuestion = import("@houston-ai/engine-client").PrdQuestion;
+type PrdQuestionsRequest =
+  import("@houston-ai/engine-client").PrdQuestionsRequest;
+type PrdApplyAnswersRequest =
+  import("@houston-ai/engine-client").PrdApplyAnswersRequest;
+type PrdRecommendRequest =
+  import("@houston-ai/engine-client").PrdRecommendRequest;
+type PrdRecommendations =
+  import("@houston-ai/engine-client").PrdRecommendations;
+type PrdIngestRequest = import("@houston-ai/engine-client").PrdIngestRequest;
+type PrdChatRequest = import("@houston-ai/engine-client").PrdChatRequest;
+
+export const tauriPrd = {
+  listBibles: (id: string) =>
+    call<BibleList>("list_bibles", () => getEngine().listBibles(id)),
+  createBible: (id: string, body: CreateBibleRequest) =>
+    call<BibleMeta>("create_bible", () => getEngine().createBible(id, body)),
+  getBible: (id: string, bibleId: string) =>
+    call<Prd>("get_bible", () => getEngine().getBible(id, bibleId)),
+  saveBible: (id: string, bibleId: string, body: Prd) =>
+    call<Prd>("set_bible", () => getEngine().setBible(id, bibleId, body)),
+  deleteBible: (id: string, bibleId: string) =>
+    call<void>("delete_bible", () => getEngine().deleteBible(id, bibleId)),
+  activateBible: (id: string, bibleId: string) =>
+    call<void>("activate_bible", () => getEngine().activateBible(id, bibleId)),
+  questions: (id: string, body: PrdQuestionsRequest) =>
+    call<PrdQuestion[]>("prd_questions", () =>
+      getEngine().prdQuestions(id, body),
+    ),
+  applyAnswers: (id: string, body: PrdApplyAnswersRequest) =>
+    call<Prd>("prd_answers", () => getEngine().prdApplyAnswers(id, body)),
+  recommend: (id: string, body: PrdRecommendRequest) =>
+    call<PrdRecommendations>("prd_recommend", () =>
+      getEngine().prdRecommend(id, body),
+    ),
+  ingest: (id: string, body: PrdIngestRequest) =>
+    call<Prd>("prd_ingest", () => getEngine().prdIngest(id, body)),
+  chat: (id: string, body: PrdChatRequest) =>
+    call<string>("prd_chat", () => getEngine().prdChat(id, body)),
+};
+
 // ─── Agents ───────────────────────────────────────────────────────────
 
 export interface CreateAgentResult {

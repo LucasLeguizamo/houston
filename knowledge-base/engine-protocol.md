@@ -98,6 +98,16 @@ module.
 | PATCH | `/v1/workspaces/:id/provider` | Set provider/model |
 | GET | `/v1/workspaces/:id/context` | Read shared `WORKSPACE.md` + `USER.md` |
 | PUT | `/v1/workspaces/:id/context` | Write shared `WORKSPACE.md` + `USER.md` |
+| GET | `/v1/workspaces/:id/prd/bibles` | List context bibles + `activeId` (active bible feeds agent prompts) |
+| POST | `/v1/workspaces/:id/prd/bibles` | Create a bible (`{ name }`), returns its meta |
+| GET | `/v1/workspaces/:id/prd/bibles/:bibleId` | Read one bible's document |
+| PUT | `/v1/workspaces/:id/prd/bibles/:bibleId` | Write one bible's document |
+| DELETE | `/v1/workspaces/:id/prd/bibles/:bibleId` | Delete a bible |
+| POST | `/v1/workspaces/:id/prd/bibles/:bibleId/activate` | Mark a bible active |
+| POST | `/v1/workspaces/:id/prd/questions` | One call: returns up to 10 tailored `{ question, suggestions[] }` for `{ prd }` |
+| POST | `/v1/workspaces/:id/prd/answers` | One call: folds `{ prd, answers[] }` into the bible, returns the merged bible |
+| POST | `/v1/workspaces/:id/prd/ingest` | Pre-fill from `{ prd, url? \| text? }` (URL fetched + stripped), returns the merged bible |
+| POST | `/v1/workspaces/:id/prd/recommend` | One-shot: `{ prd }` + Store catalog, returns `{ agents[], strategies[] }` |
 | GET | `/v1/workspaces/:id/agents` | List agents in workspace |
 | POST | `/v1/workspaces/:id/agents` | Create agent |
 | DELETE | `/v1/workspaces/:id/agents/:agent_id` | Delete agent |

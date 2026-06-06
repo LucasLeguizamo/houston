@@ -94,6 +94,195 @@ export interface WorkspaceContext {
   user: string;
 }
 
+// ---------- Company Bible (PRD) ----------
+
+export interface PrdCompany {
+  name: string;
+  oneLiner: string;
+  stage: string;
+  industry: string;
+  website: string;
+  mission: string;
+}
+
+export interface PrdProduct {
+  whatItIs: string;
+  problemSolved: string;
+  keyFeatures: string[];
+  differentiators: string[];
+}
+
+export interface PrdMarket {
+  idealCustomer: string;
+  competitors: string[];
+  positioning: string;
+}
+
+export interface PrdBusinessModel {
+  pricing: string;
+  revenueStreams: string[];
+  channels: string[];
+}
+
+export interface PrdGoals {
+  northStar: string;
+  objectives: string[];
+  successMetrics: string[];
+}
+
+export interface PrdOperations {
+  team: string;
+  painPoints: string[];
+}
+
+export interface PrdBrand {
+  voice: string;
+  links: string[];
+}
+
+/** Listing entry for one context bible (no full payload). */
+export interface BibleMeta {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** All bibles in a workspace + which one is active. */
+export interface BibleList {
+  activeId: string;
+  bibles: BibleMeta[];
+}
+
+export interface CreateBibleRequest {
+  name: string;
+}
+
+/** An agent created from a bible, kept attached in the right panel. */
+export interface AgentLink {
+  id: string;
+  name: string;
+  cards: string[];
+}
+
+/** A tracked strategy task on the bible. */
+export interface StrategyTask {
+  id: string;
+  kind: "routine" | "skill";
+  /** "improve" (sharpen the PRD) or "operate" (run the business on it). */
+  goal: "improve" | "operate" | string;
+  title: string;
+  description: string;
+  done: boolean;
+}
+
+export interface Prd {
+  /** Stakeholder perspective: "founder" | "investor" | "pm" | "vp" | ... */
+  role: string;
+  company: PrdCompany;
+  product: PrdProduct;
+  market: PrdMarket;
+  businessModel: PrdBusinessModel;
+  goals: PrdGoals;
+  operations: PrdOperations;
+  brand: PrdBrand;
+  /** Agents created from this bible. */
+  agents: AgentLink[];
+  /** Tracked strategy tasks (improve / operate + done state). */
+  strategies: StrategyTask[];
+}
+
+export interface PrdQuestion {
+  question: string;
+  /** Short tap-to-answer suggestions, specific to this company. */
+  suggestions: string[];
+}
+
+export interface PrdQuestionsRequest {
+  prd: Prd;
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdAnswer {
+  question: string;
+  answer: string;
+}
+
+export interface PrdApplyAnswersRequest {
+  prd: Prd;
+  answers: PrdAnswer[];
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdRecommendRequest {
+  /** The bible to recommend from (typically the active one). */
+  prd: Prd;
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface PrdChatRequest {
+  /** The bible the chat is grounded in (the active one). */
+  prd: Prd;
+  messages: PrdChatMessage[];
+  message: string;
+  /** An attached bible card the model should focus on, as "Label: value". */
+  context?: string;
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdIngestRequest {
+  /** The client's current bible; the merged copy is returned to be saved. */
+  prd: Prd;
+  /** A website to fetch + extract. Wins over `text` when non-empty. */
+  url?: string;
+  /** Raw document text (e.g. a pasted or uploaded .txt/.md). */
+  text?: string;
+  provider?: string;
+  model?: string;
+}
+
+export interface AgentRecommendation {
+  agentId: string;
+  name: string;
+  reason: string;
+  matchedNeeds: string[];
+  /** Bible cards this agent should own, as "section.field" keys. */
+  relevantCards: string[];
+  relevance: number;
+}
+
+export interface StrategyRecommendation {
+  kind: "routine" | "skill";
+  /** "improve" or "operate". */
+  goal: string;
+  title: string;
+  description: string;
+  reason: string;
+}
+
+export interface IntegrationRecommendation {
+  /** Composio toolkit slug, uppercase (e.g. "STRIPE", "GITHUB"). */
+  toolkit: string;
+  reason: string;
+  /** What to pull on a schedule. */
+  periodic: string;
+}
+
+export interface PrdRecommendations {
+  agents: AgentRecommendation[];
+  strategies: StrategyRecommendation[];
+  integrations: IntegrationRecommendation[];
+}
+
 // ---------- Workspace-scoped agent CRUD ----------
 
 export interface Agent {

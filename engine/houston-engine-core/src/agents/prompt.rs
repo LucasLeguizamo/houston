@@ -224,6 +224,9 @@ pub fn build_agent_context(
         if let Some(section) = crate::workspace_context::build_prompt_section(workspace_dir) {
             parts.push(section);
         }
+        if let Some(section) = crate::workspace_prd::build_prompt_section(workspace_dir) {
+            parts.push(section);
+        }
     }
 
     let integrations_path = dir.join(".houston/integrations.json");

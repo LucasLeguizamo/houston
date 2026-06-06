@@ -72,6 +72,17 @@ import type {
   VersionResponse,
   Workspace,
   WorkspaceContext,
+  Prd,
+  BibleList,
+  BibleMeta,
+  CreateBibleRequest,
+  PrdQuestion,
+  PrdQuestionsRequest,
+  PrdApplyAnswersRequest,
+  PrdRecommendRequest,
+  PrdRecommendations,
+  PrdIngestRequest,
+  PrdChatRequest,
   WorktreeInfo,
   PortableInventoryPreview,
   PortableExportRequest,
@@ -209,6 +220,58 @@ export class HoustonClient {
   }
   setWorkspaceContext(id: string, body: WorkspaceContext): Promise<WorkspaceContext> {
     return this.request("PUT", `/workspaces/${this.seg(id)}/context`, body);
+  }
+
+  // ---------- Company Bible (PRD) ----------
+
+  listBibles(id: string): Promise<BibleList> {
+    return this.request("GET", `/workspaces/${this.seg(id)}/prd/bibles`);
+  }
+  createBible(id: string, body: CreateBibleRequest): Promise<BibleMeta> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/bibles`, body);
+  }
+  getBible(id: string, bibleId: string): Promise<Prd> {
+    return this.request("GET", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`);
+  }
+  setBible(id: string, bibleId: string, body: Prd): Promise<Prd> {
+    return this.request("PUT", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`, body);
+  }
+  deleteBible(id: string, bibleId: string): Promise<void> {
+    return this.request("DELETE", `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}`);
+  }
+  activateBible(id: string, bibleId: string): Promise<void> {
+    return this.request(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/bibles/${this.seg(bibleId)}/activate`,
+    );
+  }
+  async prdQuestions(
+    id: string,
+    body: PrdQuestionsRequest,
+  ): Promise<PrdQuestion[]> {
+    const res = await this.request<{ questions: PrdQuestion[] }>(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/questions`,
+      body,
+    );
+    return res.questions;
+  }
+  prdApplyAnswers(id: string, body: PrdApplyAnswersRequest): Promise<Prd> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/answers`, body);
+  }
+  prdRecommend(id: string, body: PrdRecommendRequest): Promise<PrdRecommendations> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/recommend`, body);
+  }
+  prdIngest(id: string, body: PrdIngestRequest): Promise<Prd> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/ingest`, body);
+  }
+  async prdChat(id: string, body: PrdChatRequest): Promise<string> {
+    const res = await this.request<{ reply: string }>(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/chat`,
+      body,
+    );
+    return res.reply;
   }
 
   // ---------- workspace-scoped agents ----------
