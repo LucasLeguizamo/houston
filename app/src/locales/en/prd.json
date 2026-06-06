@@ -31,15 +31,17 @@
     "ingesting": "Reading your material..."
   },
   "interview": {
-    "stepLabel": "Question {{step}} · {{percent}}% complete",
-    "thinking": "Thinking...",
+    "preparing": "Preparing your questions...",
+    "building": "Building your company bible...",
+    "stepOf": "Question {{step}} of {{total}}",
     "suggestionsHint": "Pick one or write your own",
     "orType": "Or type your answer...",
+    "back": "Back",
     "skipQuestion": "Skip",
     "continue": "Continue",
+    "finish": "Finish",
     "doneTitle": "Your company bible is ready",
     "complete": "Nice work. You can keep editing any section below, or see which agents fit your company.",
-    "keepGoing": "Keep going",
     "viewRecommendations": "See recommendations"
   },
   "fields": {

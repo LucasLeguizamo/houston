@@ -38,7 +38,8 @@ export {
 export {
   usePrd,
   useSavePrd,
-  usePrdInterview,
+  usePrdQuestions,
+  usePrdApplyAnswers,
   usePrdIngest,
   usePrdRecommend,
 } from "./use-prd";

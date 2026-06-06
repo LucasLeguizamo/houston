@@ -138,7 +138,6 @@ export function CompanyBible() {
                   prd={prd}
                   provider={provider}
                   model={model}
-                  completeness={completeness}
                   onPrdUpdate={persist}
                   onComplete={() => setView("recommend")}
                 />

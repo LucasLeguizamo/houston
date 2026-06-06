@@ -124,9 +124,11 @@ export const tauriWorkspaces = {
 // ─── Company Bible (PRD) ──────────────────────────────────────────────
 
 type Prd = import("@houston-ai/engine-client").Prd;
-type PrdInterviewRequest =
-  import("@houston-ai/engine-client").PrdInterviewRequest;
-type PrdInterviewTurn = import("@houston-ai/engine-client").PrdInterviewTurn;
+type PrdQuestion = import("@houston-ai/engine-client").PrdQuestion;
+type PrdQuestionsRequest =
+  import("@houston-ai/engine-client").PrdQuestionsRequest;
+type PrdApplyAnswersRequest =
+  import("@houston-ai/engine-client").PrdApplyAnswersRequest;
 type PrdRecommendRequest =
   import("@houston-ai/engine-client").PrdRecommendRequest;
 type PrdRecommendations =
@@ -137,10 +139,12 @@ export const tauriPrd = {
   get: (id: string) => call<Prd>("get_prd", () => getEngine().getPrd(id)),
   save: (id: string, body: Prd) =>
     call<Prd>("set_prd", () => getEngine().setPrd(id, body)),
-  interview: (id: string, body: PrdInterviewRequest) =>
-    call<PrdInterviewTurn>("prd_interview", () =>
-      getEngine().prdInterview(id, body),
+  questions: (id: string, body: PrdQuestionsRequest) =>
+    call<PrdQuestion[]>("prd_questions", () =>
+      getEngine().prdQuestions(id, body),
     ),
+  applyAnswers: (id: string, body: PrdApplyAnswersRequest) =>
+    call<Prd>("prd_answers", () => getEngine().prdApplyAnswers(id, body)),
   recommend: (id: string, body: PrdRecommendRequest = {}) =>
     call<PrdRecommendations>("prd_recommend", () =>
       getEngine().prdRecommend(id, body),

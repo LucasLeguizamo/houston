@@ -31,15 +31,17 @@
     "ingesting": "Leyendo tu material..."
   },
   "interview": {
-    "stepLabel": "Pregunta {{step}} · {{percent}}% completo",
-    "thinking": "Pensando...",
+    "preparing": "Preparando tus preguntas...",
+    "building": "Construyendo la biblia de tu empresa...",
+    "stepOf": "Pregunta {{step}} de {{total}}",
     "suggestionsHint": "Elige una o escribe la tuya",
     "orType": "O escribe tu respuesta...",
+    "back": "Atrás",
     "skipQuestion": "Omitir",
     "continue": "Continuar",
+    "finish": "Finalizar",
     "doneTitle": "Tu biblia de empresa está lista",
     "complete": "Buen trabajo. Puedes seguir editando cualquier sección abajo, o ver qué agentes encajan con tu empresa.",
-    "keepGoing": "Seguir",
     "viewRecommendations": "Ver recomendaciones"
   },
   "fields": {

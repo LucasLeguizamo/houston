@@ -152,19 +152,28 @@ export interface Prd {
   brand: PrdBrand;
 }
 
-export interface PrdInterviewRequest {
+export interface PrdQuestion {
+  question: string;
+  /** Short tap-to-answer suggestions, specific to this company. */
+  suggestions: string[];
+}
+
+export interface PrdQuestionsRequest {
   prd: Prd;
-  userAnswer?: string;
   provider?: string;
   model?: string;
 }
 
-export interface PrdInterviewTurn {
+export interface PrdAnswer {
+  question: string;
+  answer: string;
+}
+
+export interface PrdApplyAnswersRequest {
   prd: Prd;
-  nextQuestion?: string;
-  /** Short tap-to-answer suggestions for `nextQuestion`. */
-  suggestions: string[];
-  complete: boolean;
+  answers: PrdAnswer[];
+  provider?: string;
+  model?: string;
 }
 
 export interface PrdRecommendRequest {

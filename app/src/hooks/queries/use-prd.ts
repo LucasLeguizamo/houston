@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Prd,
   PrdIngestRequest,
-  PrdInterviewRequest,
-  PrdInterviewTurn,
+  PrdQuestion,
+  PrdQuestionsRequest,
+  PrdApplyAnswersRequest,
   PrdRecommendations,
   PrdRecommendRequest,
 } from "@houston-ai/engine-client";
@@ -30,17 +31,24 @@ export function useSavePrd(workspaceId: string | undefined) {
   });
 }
 
-/**
- * One guided-interview turn. Returns the updated bible + next question; the
- * caller persists the returned bible (via `useSavePrd`) so the next turn and
- * the recommendation engine read fresh data.
- */
-export function usePrdInterview(
+/** Generate all interview questions in one call (tailored to the bible). */
+export function usePrdQuestions(
   workspaceId: string | undefined,
-): ReturnType<typeof useMutation<PrdInterviewTurn, Error, PrdInterviewRequest>> {
+): ReturnType<typeof useMutation<PrdQuestion[], Error, PrdQuestionsRequest>> {
   return useMutation({
-    mutationFn: (body: PrdInterviewRequest) =>
-      tauriPrd.interview(workspaceId!, body),
+    mutationFn: (body: PrdQuestionsRequest) =>
+      tauriPrd.questions(workspaceId!, body),
+  });
+}
+
+/** Fold a full set of answers into the bible in one call. Returns the merged
+ * bible for the caller to persist (via `useSavePrd`). */
+export function usePrdApplyAnswers(
+  workspaceId: string | undefined,
+): ReturnType<typeof useMutation<Prd, Error, PrdApplyAnswersRequest>> {
+  return useMutation({
+    mutationFn: (body: PrdApplyAnswersRequest) =>
+      tauriPrd.applyAnswers(workspaceId!, body),
   });
 }
 

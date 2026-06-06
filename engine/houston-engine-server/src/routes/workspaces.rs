@@ -10,7 +10,9 @@ use axum::{
 use houston_engine_core::agents_crud::{self, Agent, CreateAgent, CreateAgentResult, UpdateAgent};
 use houston_engine_core::workspace_context::{self, WorkspaceContext};
 use houston_engine_core::workspace_prd::ingest::{fetch_url_text, ingest};
-use houston_engine_core::workspace_prd::interview::{interview, InterviewTurn};
+use houston_engine_core::workspace_prd::interview::{
+    apply_answers, generate_questions, Answer, Question,
+};
 use houston_engine_core::workspace_prd::recommend::{recommend, Recommendations};
 use houston_engine_core::workspace_prd::{self, Prd};
 use houston_engine_core::workspaces::{self, CreateWorkspace, RenameWorkspace, Workspace};
@@ -31,7 +33,8 @@ pub fn router() -> Router<Arc<ServerState>> {
         )
         // Company Bible (PRD) — workspace-level structured product/company doc.
         .route("/workspaces/:id/prd", get(get_prd).put(put_prd))
-        .route("/workspaces/:id/prd/interview", post(prd_interview))
+        .route("/workspaces/:id/prd/questions", post(prd_questions))
+        .route("/workspaces/:id/prd/answers", post(prd_answers))
         .route("/workspaces/:id/prd/recommend", post(prd_recommend))
         .route("/workspaces/:id/prd/ingest", post(prd_ingest))
         // Workspace-scoped agents CRUD.
@@ -160,26 +163,51 @@ async fn put_prd(
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct PrdInterviewBody {
-    /// The client's current in-memory bible (authoritative; the model folds the
-    /// answer into it and returns the full updated copy for the client to save).
+struct PrdQuestionsBody {
+    /// The client's current bible (questions are tailored to it).
     prd: Prd,
-    #[serde(default)]
-    user_answer: String,
     #[serde(default)]
     provider: Option<String>,
     #[serde(default)]
     model: Option<String>,
 }
 
-async fn prd_interview(
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PrdQuestionsResponse {
+    questions: Vec<Question>,
+}
+
+async fn prd_questions(
     State(_st): State<Arc<ServerState>>,
     Path(_id): Path<String>,
-    Json(body): Json<PrdInterviewBody>,
-) -> Result<Json<InterviewTurn>, ApiError> {
+    Json(body): Json<PrdQuestionsBody>,
+) -> Result<Json<PrdQuestionsResponse>, ApiError> {
     let (provider, model) = resolve_oneshot(body.provider, body.model)?;
-    let turn = interview(&body.prd, &body.user_answer, provider, model.as_deref()).await?;
-    Ok(Json(turn))
+    let questions = generate_questions(&body.prd, provider, model.as_deref()).await?;
+    Ok(Json(PrdQuestionsResponse { questions }))
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PrdAnswersBody {
+    /// The client's current bible (the merged copy is returned to be saved).
+    prd: Prd,
+    answers: Vec<Answer>,
+    #[serde(default)]
+    provider: Option<String>,
+    #[serde(default)]
+    model: Option<String>,
+}
+
+async fn prd_answers(
+    State(_st): State<Arc<ServerState>>,
+    Path(_id): Path<String>,
+    Json(body): Json<PrdAnswersBody>,
+) -> Result<Json<Prd>, ApiError> {
+    let (provider, model) = resolve_oneshot(body.provider, body.model)?;
+    let merged = apply_answers(&body.prd, &body.answers, provider, model.as_deref()).await?;
+    Ok(Json(merged))
 }
 
 #[derive(Deserialize)]

@@ -1,26 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import { Button, Spinner, cn } from "@houston-ai/core";
-import type { Prd } from "@houston-ai/engine-client";
-import { usePrdInterview } from "../../hooks/queries";
+import type { Prd, PrdQuestion } from "@houston-ai/engine-client";
+import { usePrdApplyAnswers, usePrdQuestions } from "../../hooks/queries";
+import { PrdCard } from "./prd-card";
+
+type Phase = "loading" | "asking" | "applying" | "done";
 
 /**
- * Question flow for the Company Bible, styled after Houston's coachmark tutorial
- * (UiTour): one big question + tap-to-answer suggestion chips so a non-technical
- * user rarely types. Runs the opening turn on mount. Each turn folds the answer
- * in (parent persists) and the model returns the next question. Errors toast via
- * the engine call wrapper, so a failed turn just lets the user retry.
+ * Two-call quick-insight interview: one call generates every question, the user
+ * answers them instantly (no per-question round trip), one call folds them in.
  */
-/** Quick-insight cap: stop after this many questions even if the model has more. */
-const MAX_QUESTIONS = 10;
-
 export function PrdInterview({
   workspaceId,
   prd,
   provider,
   model,
-  completeness,
   onPrdUpdate,
   onComplete,
 }: {
@@ -28,109 +24,130 @@ export function PrdInterview({
   prd: Prd;
   provider: string;
   model: string;
-  completeness: number;
   onPrdUpdate: (next: Prd) => void;
   onComplete: () => void;
 }) {
   const { t } = useTranslation("prd");
-  const interview = usePrdInterview(workspaceId);
-  const [question, setQuestion] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const questionsMut = usePrdQuestions(workspaceId);
+  const applyMut = usePrdApplyAnswers(workspaceId);
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [questions, setQuestions] = useState<PrdQuestion[]>([]);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [idx, setIdx] = useState(0);
   const [answer, setAnswer] = useState("");
-  const [step, setStep] = useState(0);
-  const [done, setDone] = useState(false);
 
-  const runTurn = (userAnswer: string) => {
-    interview.mutate(
-      { prd, userAnswer, provider, model },
+  // Generate all questions once on mount.
+  const kicked = useRef(false);
+  useEffect(() => {
+    if (kicked.current) return;
+    kicked.current = true;
+    questionsMut.mutate(
+      { prd, provider, model },
       {
-        onSuccess: (turn) => {
-          onPrdUpdate(turn.prd);
-          setAnswer("");
-          // Stop when the model says so, or once we hit the question cap.
-          const nextStep = step + 1;
-          if (turn.complete || !turn.nextQuestion || nextStep > MAX_QUESTIONS) {
-            setDone(true);
-            setQuestion(null);
-            setSuggestions([]);
+        onSuccess: (qs) => {
+          if (qs.length === 0) {
+            setPhase("done");
             return;
           }
-          setDone(false);
-          setQuestion(turn.nextQuestion);
-          setSuggestions(turn.suggestions ?? []);
-          setStep(nextStep);
+          setQuestions(qs);
+          setAnswers(new Array(qs.length).fill(""));
+          setPhase("asking");
         },
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const finish = (all: string[]) => {
+    setPhase("applying");
+    const pairs = questions
+      .map((q, i) => ({ question: q.question, answer: all[i] ?? "" }))
+      .filter((p) => p.answer.trim().length > 0);
+    applyMut.mutate(
+      { prd, answers: pairs, provider, model },
+      {
+        onSuccess: (merged) => {
+          onPrdUpdate(merged);
+          setPhase("done");
+        },
+        onError: () => setPhase("asking"),
       },
     );
   };
 
-  // Kick off the opening question once, when the flow first mounts.
-  const kicked = useRef(false);
-  useEffect(() => {
-    if (!kicked.current) {
-      kicked.current = true;
-      runTurn("");
+  const advance = (value: string) => {
+    const next = answers.slice();
+    next[idx] = value;
+    setAnswers(next);
+    setAnswer("");
+    if (idx + 1 < questions.length) {
+      setIdx(idx + 1);
+    } else {
+      finish(next);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
-  const busy = interview.isPending;
+  const goBack = () => {
+    if (idx === 0) return;
+    const prev = idx - 1;
+    setIdx(prev);
+    setAnswer(answers[prev] ?? "");
+  };
 
-  if (done) {
+  if (phase === "loading" || phase === "applying") {
     return (
-      <Card>
+      <PrdCard>
+        <div className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
+          <Spinner className="size-4" />
+          {phase === "loading" ? t("interview.preparing") : t("interview.building")}
+        </div>
+      </PrdCard>
+    );
+  }
+
+  if (phase === "done") {
+    return (
+      <PrdCard>
         <div className="flex size-11 items-center justify-center rounded-full bg-primary/10">
           <Check className="size-5 text-primary" />
         </div>
         <h2 className="mt-4 text-[22px] font-normal leading-snug">
           {t("interview.doneTitle")}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("interview.complete")}
-        </p>
-        <div className="mt-5 flex items-center justify-between gap-2">
-          <Button
-            variant="ghost"
-            className="rounded-full"
-            onClick={() => runTurn("")}
-            disabled={busy}
-          >
-            {t("interview.keepGoing")}
-          </Button>
+        <p className="mt-2 text-sm text-muted-foreground">{t("interview.complete")}</p>
+        <div className="mt-5 flex justify-end">
           <Button className="rounded-full" onClick={onComplete}>
             <Sparkles className="size-4" />
             {t("interview.viewRecommendations")}
           </Button>
         </div>
-      </Card>
+      </PrdCard>
     );
   }
 
+  const q = questions[idx];
   return (
-    <Card>
+    <PrdCard>
       <p className="text-xs text-muted-foreground">
-        {t("interview.stepLabel", { step, percent: completeness })}
+        {t("interview.stepOf", { step: idx + 1, total: questions.length })}
       </p>
-      <h2 className="mt-2 min-h-[3rem] text-[22px] font-normal leading-snug">
-        {busy && !question ? t("interview.thinking") : question}
-      </h2>
+      <h2 className="mt-2 text-[22px] font-normal leading-snug">{q.question}</h2>
 
-      {suggestions.length > 0 && (
+      {q.suggestions.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 text-xs text-muted-foreground">
             {t("interview.suggestionsHint")}
           </p>
           <div className="flex flex-wrap gap-2">
-            {suggestions.map((s) => (
+            {q.suggestions.map((s) => (
               <button
                 key={s}
                 type="button"
-                disabled={busy}
-                onClick={() => runTurn(s)}
+                onClick={() => advance(s)}
                 className={cn(
                   "rounded-full border border-border bg-secondary px-3 py-1.5",
                   "text-sm text-foreground transition-colors",
-                  "hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50",
+                  "hover:bg-primary/10 hover:border-primary/30",
                 )}
               >
                 {s}
@@ -145,12 +162,11 @@ export function PrdInterview({
         onChange={(e) => setAnswer(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && answer.trim()) {
-            runTurn(answer);
+            advance(answer);
           }
         }}
         placeholder={t("interview.orType")}
         rows={2}
-        disabled={busy}
         className={cn(
           "mt-4 w-full resize-none rounded-lg border border-black/[0.06] bg-background",
           "px-3 py-2 text-sm leading-relaxed outline-none",
@@ -160,32 +176,24 @@ export function PrdInterview({
       />
 
       <div className="mt-4 flex items-center justify-between gap-2">
-        <Button
-          variant="ghost"
-          className="rounded-full"
-          onClick={() => runTurn("")}
-          disabled={busy}
-        >
-          {t("interview.skipQuestion")}
-        </Button>
-        <Button
-          className="rounded-full"
-          onClick={() => answer.trim() && runTurn(answer)}
-          disabled={!answer.trim() || busy}
-        >
-          {busy ? <Spinner className="size-4" /> : <ArrowRight className="size-4" />}
-          {t("interview.continue")}
+        <div className="flex items-center gap-2">
+          {idx > 0 && (
+            <Button variant="ghost" className="rounded-full" onClick={goBack}>
+              <ArrowLeft className="size-4" />
+              {t("interview.back")}
+            </Button>
+          )}
+          <Button variant="ghost" className="rounded-full" onClick={() => advance("")}>
+            {t("interview.skipQuestion")}
+          </Button>
+        </div>
+        <Button className="rounded-full" onClick={() => advance(answer)}>
+          <ArrowRight className="size-4" />
+          {idx + 1 < questions.length
+            ? t("interview.continue")
+            : t("interview.finish")}
         </Button>
       </div>
-    </Card>
-  );
-}
-
-// Shared focused-card frame, matching the UiTour coachmark aesthetic.
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto w-full max-w-xl rounded-2xl border border-black/5 bg-background p-6 shadow-[0_10px_40px_rgba(0,0,0,0.10)]">
-      {children}
-    </div>
+    </PrdCard>
   );
 }

@@ -73,8 +73,9 @@ import type {
   Workspace,
   WorkspaceContext,
   Prd,
-  PrdInterviewRequest,
-  PrdInterviewTurn,
+  PrdQuestion,
+  PrdQuestionsRequest,
+  PrdApplyAnswersRequest,
   PrdRecommendRequest,
   PrdRecommendations,
   PrdIngestRequest,
@@ -225,8 +226,19 @@ export class HoustonClient {
   setPrd(id: string, body: Prd): Promise<Prd> {
     return this.request("PUT", `/workspaces/${this.seg(id)}/prd`, body);
   }
-  prdInterview(id: string, body: PrdInterviewRequest): Promise<PrdInterviewTurn> {
-    return this.request("POST", `/workspaces/${this.seg(id)}/prd/interview`, body);
+  async prdQuestions(
+    id: string,
+    body: PrdQuestionsRequest,
+  ): Promise<PrdQuestion[]> {
+    const res = await this.request<{ questions: PrdQuestion[] }>(
+      "POST",
+      `/workspaces/${this.seg(id)}/prd/questions`,
+      body,
+    );
+    return res.questions;
+  }
+  prdApplyAnswers(id: string, body: PrdApplyAnswersRequest): Promise<Prd> {
+    return this.request("POST", `/workspaces/${this.seg(id)}/prd/answers`, body);
   }
   prdRecommend(id: string, body: PrdRecommendRequest = {}): Promise<PrdRecommendations> {
     return this.request("POST", `/workspaces/${this.seg(id)}/prd/recommend`, body);

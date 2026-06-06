@@ -100,7 +100,8 @@ module.
 | PUT | `/v1/workspaces/:id/context` | Write shared `WORKSPACE.md` + `USER.md` |
 | GET | `/v1/workspaces/:id/prd` | Read the Company Bible (`PRD.json`) |
 | PUT | `/v1/workspaces/:id/prd` | Write the Company Bible |
-| POST | `/v1/workspaces/:id/prd/interview` | One guided-interview turn: folds `{ prd, userAnswer }` into the bible, returns `{ prd, nextQuestion?, suggestions[], complete }` |
+| POST | `/v1/workspaces/:id/prd/questions` | One call: returns up to 10 tailored `{ question, suggestions[] }` for the bible |
+| POST | `/v1/workspaces/:id/prd/answers` | One call: folds `{ prd, answers[] }` into the bible, returns the merged bible |
 | POST | `/v1/workspaces/:id/prd/ingest` | Pre-fill from `{ prd, url? \| text? }` (URL fetched + stripped), returns the merged bible |
 | POST | `/v1/workspaces/:id/prd/recommend` | One-shot: saved bible + Store catalog, returns `{ agents[], strategies[] }` |
 | GET | `/v1/workspaces/:id/agents` | List agents in workspace |
