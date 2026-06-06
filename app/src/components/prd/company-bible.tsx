@@ -24,6 +24,7 @@ import { computeCompleteness, emptyPrd } from "./prd-model";
 import { PrdBibleBar } from "./prd-bible-bar";
 import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
+import { PrdAgentSidebar } from "./prd-agent-sidebar";
 import { PrdChat } from "./prd-chat";
 import { Centered, ViewTab } from "./prd-bits";
 import { downloadBible } from "./prd-export";
@@ -137,7 +138,8 @@ export function CompanyBible() {
           {save.isPending && <Spinner className="size-3.5" />}
         </div>
       </header>
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-3xl">
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -174,6 +176,13 @@ export function CompanyBible() {
             />
           )}
         </div>
+        </div>
+        <PrdAgentSidebar
+          workspaceId={workspace.id}
+          prd={prd}
+          provider={provider}
+          model={model}
+        />
       </div>
       <PrdChat
         workspaceId={workspace.id}

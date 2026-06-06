@@ -130,5 +130,16 @@
     "send": "Send",
     "askAbout": "Here is our current \"{{label}}\": {{value}}. Propose an edit, an extension, or a modification to make it stronger for this company.",
     "askEmpty": "Our \"{{label}}\" is empty. Propose what it should say for this company."
+  },
+  "sidebar": {
+    "title": "Suggested agents",
+    "intro": "Turn your bible into agents. Install a matching one or generate a custom one.",
+    "suggest": "Suggest agents",
+    "refresh": "Refresh",
+    "create": "Create",
+    "added": "Added",
+    "created": "Added {{name}}",
+    "generateCustom": "Generate custom agent",
+    "customName": "Custom agent"
   }
 }

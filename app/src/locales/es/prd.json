@@ -130,5 +130,16 @@
     "send": "Enviar",
     "askAbout": "Esto es nuestro \"{{label}}\" actual: {{value}}. Propón una edición, una extensión o una modificación para mejorarlo para esta empresa.",
     "askEmpty": "Nuestro \"{{label}}\" está vacío. Propón qué debería decir para esta empresa."
+  },
+  "sidebar": {
+    "title": "Agentes sugeridos",
+    "intro": "Convierte tu biblia en agentes: instala uno que encaje o genera uno a medida.",
+    "suggest": "Sugerir agentes",
+    "refresh": "Actualizar",
+    "create": "Crear",
+    "added": "Agregado",
+    "created": "{{name}} agregado",
+    "generateCustom": "Generar agente a medida",
+    "customName": "Agente a medida"
   }
 }
