@@ -36,13 +36,13 @@
     "stepOf": "Pergunta {{step}} de {{total}}",
     "suggestionsHint": "Escolha uma ou escreva a sua",
     "orType": "Ou digite sua resposta...",
-    "back": "Voltar",
     "skipQuestion": "Pular",
     "continue": "Continuar",
     "finish": "Concluir",
     "doneTitle": "Sua bíblia da empresa está pronta",
     "complete": "Bom trabalho. Você pode continuar editando qualquer seção abaixo, ou ver quais agentes combinam com sua empresa.",
-    "viewRecommendations": "Ver recomendações"
+    "viewRecommendations": "Ver recomendações",
+    "failed": "Não foi possível preparar suas perguntas."
   },
   "fields": {
     "textPlaceholder": "Adicione detalhes...",
@@ -110,6 +110,7 @@
   "modelLabel": "Modelo",
   "wiki": {
     "subtitle": "Tudo o que sabemos sobre sua empresa, em um só lugar. Toque em qualquer cartão para editar.",
-    "empty": "Ainda não preenchido"
+    "empty": "Ainda não preenchido",
+    "improve": "Melhorar com IA"
   }
 }

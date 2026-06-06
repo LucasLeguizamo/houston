@@ -36,13 +36,13 @@
     "stepOf": "Question {{step}} of {{total}}",
     "suggestionsHint": "Pick one or write your own",
     "orType": "Or type your answer...",
-    "back": "Back",
     "skipQuestion": "Skip",
     "continue": "Continue",
     "finish": "Finish",
     "doneTitle": "Your company bible is ready",
     "complete": "Nice work. You can keep editing any section below, or see which agents fit your company.",
-    "viewRecommendations": "See recommendations"
+    "viewRecommendations": "See recommendations",
+    "failed": "Couldn't prepare your questions."
   },
   "fields": {
     "textPlaceholder": "Add details...",
@@ -110,6 +110,7 @@
   "modelLabel": "Model",
   "wiki": {
     "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
-    "empty": "Not added yet"
+    "empty": "Not added yet",
+    "improve": "Improve with AI"
   }
 }

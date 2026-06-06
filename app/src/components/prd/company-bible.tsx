@@ -35,7 +35,11 @@ export function CompanyBible() {
   const { data, isLoading } = usePrd(workspaceId);
   const save = useSavePrd(workspaceId);
   const [view, setView] = useState<View>("bible");
-  const [started, setStarted] = useState(false);
+  // Bible-tab mode: null = derive from data. "start" only for a brand-new empty
+  // bible; "interview" while actively running the quick-insight flow; "wiki"
+  // (the default for any populated bible) just browses/edits — it never auto-runs
+  // the interview, so a completed bible won't get stuck "preparing questions".
+  const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
   // Model used for the whole onboarding (interview + ingest + recommend). Lets
   // the user pick a faster model for quick insight. Provider follows the
   // workspace; model defaults to the workspace's, overridable here.
@@ -63,8 +67,9 @@ export function CompanyBible() {
   // write — and the cache update — before handing off to the question flow,
   // otherwise the first interview turn would run against the pre-ingest bible.
   const persist = (next: Prd) => save.mutateAsync(next);
-  // Show the role + ingest start screen only for a brand-new, untouched bible.
-  const showStart = !started && !prd.role && completeness === 0;
+  // A brand-new, untouched bible starts in the onboarding; anything with content
+  // (or a returning user) lands on the wiki.
+  const effectiveMode = mode ?? (completeness === 0 && !prd.role ? "start" : "wiki");
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -123,26 +128,46 @@ export function CompanyBible() {
             </div>
           ) : view === "bible" ? (
             <div className="flex flex-col gap-6">
-              {showStart ? (
+              {effectiveMode === "start" ? (
                 <PrdOnboardingStart
                   workspaceId={workspace.id}
                   prd={prd}
                   provider={provider}
                   model={model}
                   onPrdUpdate={persist}
-                  onStarted={() => setStarted(true)}
+                  onStarted={() => setMode("interview")}
                 />
+              ) : effectiveMode === "interview" ? (
+                <>
+                  <PrdInterview
+                    workspaceId={workspace.id}
+                    prd={prd}
+                    provider={provider}
+                    model={model}
+                    onPrdUpdate={persist}
+                    onComplete={() => {
+                      setMode("wiki");
+                      setView("recommend");
+                    }}
+                  />
+                  <PrdWiki prd={prd} onChange={persist} />
+                </>
               ) : (
-                <PrdInterview
-                  workspaceId={workspace.id}
-                  prd={prd}
-                  provider={provider}
-                  model={model}
-                  onPrdUpdate={persist}
-                  onComplete={() => setView("recommend")}
-                />
+                <>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => setMode("interview")}
+                    >
+                      <Sparkles className="size-3.5" />
+                      {t("wiki.improve")}
+                    </Button>
+                  </div>
+                  <PrdWiki prd={prd} onChange={persist} />
+                </>
               )}
-              <PrdWiki prd={prd} onChange={persist} />
             </div>
           ) : (
             <PrdRecommendations

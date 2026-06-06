@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Button, Spinner, cn } from "@houston-ai/core";
 import type { Prd, PrdQuestion } from "@houston-ai/engine-client";
 import { usePrdApplyAnswers, usePrdQuestions } from "../../hooks/queries";
 import { PrdCard } from "./prd-card";
 
-type Phase = "loading" | "asking" | "applying" | "done";
+type Phase = "loading" | "asking" | "applying" | "done" | "error";
 
-/**
- * Two-call quick-insight interview: one call generates every question, the user
- * answers them instantly (no per-question round trip), one call folds them in.
- */
+// Two-call quick-insight interview: one call generates every question, the user
+// answers them instantly (no round trip), one call folds them all in.
 export function PrdInterview({
   workspaceId,
   prd,
@@ -27,7 +25,7 @@ export function PrdInterview({
   onPrdUpdate: (next: Prd) => void;
   onComplete: () => void;
 }) {
-  const { t } = useTranslation("prd");
+  const { t } = useTranslation(["prd", "common"]);
   const questionsMut = usePrdQuestions(workspaceId);
   const applyMut = usePrdApplyAnswers(workspaceId);
   const [phase, setPhase] = useState<Phase>("loading");
@@ -36,11 +34,8 @@ export function PrdInterview({
   const [idx, setIdx] = useState(0);
   const [answer, setAnswer] = useState("");
 
-  // Generate all questions once on mount.
-  const kicked = useRef(false);
-  useEffect(() => {
-    if (kicked.current) return;
-    kicked.current = true;
+  const loadQuestions = () => {
+    setPhase("loading");
     questionsMut.mutate(
       { prd, provider, model },
       {
@@ -51,10 +46,22 @@ export function PrdInterview({
           }
           setQuestions(qs);
           setAnswers(new Array(qs.length).fill(""));
+          setIdx(0);
           setPhase("asking");
         },
+        // The engine call wrapper already toasts the real reason; just leave the
+        // spinner so the user can retry instead of hanging on "preparing".
+        onError: () => setPhase("error"),
       },
     );
+  };
+
+  // Generate all questions once on mount.
+  const kicked = useRef(false);
+  useEffect(() => {
+    if (kicked.current) return;
+    kicked.current = true;
+    loadQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -87,19 +94,22 @@ export function PrdInterview({
     }
   };
 
-  const goBack = () => {
-    if (idx === 0) return;
-    const prev = idx - 1;
-    setIdx(prev);
-    setAnswer(answers[prev] ?? "");
-  };
-
-  if (phase === "loading" || phase === "applying") {
+  if (phase === "loading" || phase === "applying" || phase === "error") {
+    const failed = phase === "error";
     return (
       <PrdCard>
         <div className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
-          <Spinner className="size-4" />
-          {phase === "loading" ? t("interview.preparing") : t("interview.building")}
+          {!failed && <Spinner className="size-4" />}
+          {failed
+            ? t("interview.failed")
+            : phase === "loading"
+              ? t("interview.preparing")
+              : t("interview.building")}
+          {failed && (
+            <Button size="sm" className="ml-1 rounded-full" onClick={loadQuestions}>
+              {t("common:actions.retry")}
+            </Button>
+          )}
         </div>
       </PrdCard>
     );
@@ -132,7 +142,6 @@ export function PrdInterview({
         {t("interview.stepOf", { step: idx + 1, total: questions.length })}
       </p>
       <h2 className="mt-2 text-[22px] font-normal leading-snug">{q.question}</h2>
-
       {q.suggestions.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 text-xs text-muted-foreground">
@@ -176,17 +185,9 @@ export function PrdInterview({
       />
 
       <div className="mt-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {idx > 0 && (
-            <Button variant="ghost" className="rounded-full" onClick={goBack}>
-              <ArrowLeft className="size-4" />
-              {t("interview.back")}
-            </Button>
-          )}
-          <Button variant="ghost" className="rounded-full" onClick={() => advance("")}>
-            {t("interview.skipQuestion")}
-          </Button>
-        </div>
+        <Button variant="ghost" className="rounded-full" onClick={() => advance("")}>
+          {t("interview.skipQuestion")}
+        </Button>
         <Button className="rounded-full" onClick={() => advance(answer)}>
           <ArrowRight className="size-4" />
           {idx + 1 < questions.length
