@@ -8,7 +8,7 @@ import {
   Target,
   Cog,
   Palette,
-  MessageSquarePlus,
+  Pencil,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@houston-ai/core";
@@ -69,20 +69,24 @@ export function PrdWiki({
                 const value = getField(prd, section.id, field.key);
                 const filled = isFieldFilled(value);
                 const label = t(`fields.${section.id}.${field.key}`);
+                // Primary click sends the card into the Houston chat so it can
+                // propose an edit / extension / modification. The pencil opens
+                // the manual editor.
+                const ask = () => onAsk?.(label, filled ? preview(value) : "");
+                const edit = () =>
+                  setEditing({ section: section.id, field: field.key, kind: field.kind });
                 return (
                   <div
                     key={field.key}
                     role="button"
                     tabIndex={0}
-                    onClick={() =>
-                      setEditing({ section: section.id, field: field.key, kind: field.kind })
-                    }
+                    onClick={onAsk ? ask : edit}
                     className={cn(
                       "group relative flex flex-col gap-1.5 rounded-xl border border-border bg-card p-4 text-left",
                       "cursor-pointer transition-colors hover:border-primary/30 hover:bg-primary/[0.03]",
                     )}
                   >
-                    <span className="text-sm font-medium">{label}</span>
+                    <span className="pr-7 text-sm font-medium">{label}</span>
                     <span
                       className={cn(
                         "line-clamp-3 text-sm",
@@ -91,23 +95,21 @@ export function PrdWiki({
                     >
                       {filled ? preview(value) : t("wiki.empty")}
                     </span>
-                    {onAsk && filled && (
-                      <button
-                        type="button"
-                        aria-label={t("wiki.ask")}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAsk(label, preview(value));
-                        }}
-                        className={cn(
-                          "absolute right-2 top-2 rounded-full p-1.5 text-muted-foreground",
-                          "opacity-60 transition-opacity hover:bg-primary/10 hover:text-primary",
-                          "group-hover:opacity-100",
-                        )}
-                      >
-                        <MessageSquarePlus className="size-4" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      aria-label={t("wiki.edit")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        edit();
+                      }}
+                      className={cn(
+                        "absolute right-2 top-2 rounded-full p-1.5 text-muted-foreground",
+                        "opacity-60 transition-opacity hover:bg-secondary hover:text-foreground",
+                        "group-hover:opacity-100",
+                      )}
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
                   </div>
                 );
               })}

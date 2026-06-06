@@ -154,7 +154,9 @@ export function CompanyBible() {
               persist={persist}
               onAsk={(label, value) =>
                 setInjected({
-                  text: t("chat.askAbout", { label, value }),
+                  text: value.trim()
+                    ? t("chat.askAbout", { label, value })
+                    : t("chat.askEmpty", { label }),
                   nonce: Date.now(),
                 })
               }

@@ -112,7 +112,7 @@
     "subtitle": "Tudo o que sabemos sobre sua empresa, em um só lugar. Toque em qualquer cartão para editar.",
     "empty": "Ainda não preenchido",
     "improve": "Melhorar com IA",
-    "ask": "Pergunte ao Houston sobre isto"
+    "edit": "Editar"
   },
   "bibles": {
     "defaultName": "Bíblia da empresa",
@@ -128,6 +128,7 @@
     "title": "Pergunte ao Houston",
     "placeholder": "Pergunte sobre sua bíblia, ou como implementar algo...",
     "send": "Enviar",
-    "askAbout": "Sobre \"{{label}}\": {{value}}. Como devemos implementar ou melhorar isso?"
+    "askAbout": "Este é o nosso \"{{label}}\" atual: {{value}}. Proponha uma edição, uma extensão ou uma modificação para torná-lo mais forte para esta empresa.",
+    "askEmpty": "Nosso \"{{label}}\" está vazio. Proponha o que ele deve dizer para esta empresa."
   }
 }

@@ -112,7 +112,7 @@
     "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
     "empty": "Not added yet",
     "improve": "Improve with AI",
-    "ask": "Ask Houston about this"
+    "edit": "Edit"
   },
   "bibles": {
     "defaultName": "Company Bible",
@@ -128,6 +128,7 @@
     "title": "Ask Houston",
     "placeholder": "Ask about your bible, or how to implement something...",
     "send": "Send",
-    "askAbout": "About \"{{label}}\": {{value}}. How should we implement or improve this?"
+    "askAbout": "Here is our current \"{{label}}\": {{value}}. Propose an edit, an extension, or a modification to make it stronger for this company.",
+    "askEmpty": "Our \"{{label}}\" is empty. Propose what it should say for this company."
   }
 }
