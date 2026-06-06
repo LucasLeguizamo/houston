@@ -143,5 +143,13 @@
     "customName": "Custom agent",
     "createAll": "Create all",
     "bibleSlice": "Your slice of the Company Bible"
+  },
+  "thinking": {
+    "reading": "Reading your bible...",
+    "matching": "Matching agents to your needs...",
+    "drafting": "Drafting suggestions...",
+    "applying": "Folding in your answers...",
+    "replying": "Thinking...",
+    "extracting": "Reading your material..."
   }
 }

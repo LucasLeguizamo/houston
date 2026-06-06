@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Send, Sparkles } from "lucide-react";
-import { Button, Spinner, cn } from "@houston-ai/core";
+import { Button, cn } from "@houston-ai/core";
 import type { Prd, PrdChatMessage } from "@houston-ai/engine-client";
 import { usePrdChat } from "../../hooks/queries";
+import { PrdThinking } from "./prd-thinking";
 
 /**
  * Houston chat docked at the bottom of the Company Bible, grounded in the active
@@ -91,8 +92,8 @@ export function PrdChat({
                 </div>
               ))}
               {chat.isPending && (
-                <div className="self-start rounded-lg bg-background px-3 py-2">
-                  <Spinner className="size-4" />
+                <div className="self-start rounded-lg bg-background px-3 py-2 text-sm">
+                  <PrdThinking phrases={[t("thinking.replying")]} />
                 </div>
               )}
             </div>

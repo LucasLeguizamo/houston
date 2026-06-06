@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
-import { Button, Spinner, cn } from "@houston-ai/core";
+import { Button, cn } from "@houston-ai/core";
 import type { Prd, PrdQuestion } from "@houston-ai/engine-client";
 import { usePrdApplyAnswers, usePrdQuestions } from "../../hooks/queries";
 import { PrdCard } from "./prd-card";
+import { PrdThinking } from "./prd-thinking";
 
 type Phase = "loading" | "asking" | "applying" | "done" | "error";
 
@@ -99,31 +100,33 @@ export function PrdInterview({
     return (
       <PrdCard>
         <div className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
-          {!failed && <Spinner className="size-4" />}
-          {failed
-            ? t("interview.failed")
-            : phase === "loading"
-              ? t("interview.preparing")
-              : t("interview.building")}
-          {failed && (
-            <Button size="sm" className="ml-1 rounded-full" onClick={loadQuestions}>
-              {t("common:actions.retry")}
-            </Button>
+          {failed ? (
+            <>
+              {t("interview.failed")}
+              <Button size="sm" className="ml-1 rounded-full" onClick={loadQuestions}>
+                {t("common:actions.retry")}
+              </Button>
+            </>
+          ) : (
+            <PrdThinking
+              phrases={
+                phase === "loading"
+                  ? [t("thinking.reading"), t("thinking.drafting")]
+                  : [t("thinking.applying"), t("thinking.drafting")]
+              }
+            />
           )}
         </div>
       </PrdCard>
     );
   }
-
   if (phase === "done") {
     return (
       <PrdCard>
         <div className="flex size-11 items-center justify-center rounded-full bg-primary/10">
           <Check className="size-5 text-primary" />
         </div>
-        <h2 className="mt-4 text-[22px] font-normal leading-snug">
-          {t("interview.doneTitle")}
-        </h2>
+        <h2 className="mt-4 text-[22px] font-normal leading-snug">{t("interview.doneTitle")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{t("interview.complete")}</p>
         <div className="mt-5 flex justify-end">
           <Button className="rounded-full" onClick={onComplete}>
@@ -134,7 +137,6 @@ export function PrdInterview({
       </PrdCard>
     );
   }
-
   const q = questions[idx];
   return (
     <PrdCard>
@@ -144,9 +146,7 @@ export function PrdInterview({
       <h2 className="mt-2 text-[22px] font-normal leading-snug">{q.question}</h2>
       {q.suggestions.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs text-muted-foreground">
-            {t("interview.suggestionsHint")}
-          </p>
+          <p className="mb-2 text-xs text-muted-foreground">{t("interview.suggestionsHint")}</p>
           <div className="flex flex-wrap gap-2">
             {q.suggestions.map((s) => (
               <button

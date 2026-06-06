@@ -143,5 +143,13 @@
     "customName": "Agente a medida",
     "createAll": "Crear todos",
     "bibleSlice": "Tu parte de la biblia de empresa"
+  },
+  "thinking": {
+    "reading": "Leyendo tu biblia...",
+    "matching": "Emparejando agentes con tus necesidades...",
+    "drafting": "Redactando sugerencias...",
+    "applying": "Integrando tus respuestas...",
+    "replying": "Pensando...",
+    "extracting": "Leyendo tu material..."
   }
 }

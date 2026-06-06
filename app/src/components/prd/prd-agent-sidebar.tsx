@@ -9,6 +9,7 @@ import { useAgentCatalogStore } from "../../stores/agent-catalog";
 import { useAgentStore } from "../../stores/agents";
 import { useUIStore } from "../../stores/ui";
 import { getField } from "./prd-model";
+import { PrdThinking } from "./prd-thinking";
 
 type Status = "idle" | "busy" | "done";
 
@@ -118,7 +119,6 @@ export function PrdAgentSidebar({
         {t("sidebar.title")}
       </div>
       <p className="text-xs text-muted-foreground">{t("sidebar.intro")}</p>
-
       <Button
         size="sm"
         className="rounded-full"
@@ -128,6 +128,14 @@ export function PrdAgentSidebar({
         {recommend.isPending ? <Spinner className="size-4" /> : <Sparkles className="size-4" />}
         {recommend.data ? t("sidebar.refresh") : t("sidebar.suggest")}
       </Button>
+
+      {recommend.isPending && (
+        <div className="px-1 text-sm">
+          <PrdThinking
+            phrases={[t("thinking.reading"), t("thinking.matching"), t("thinking.drafting")]}
+          />
+        </div>
+      )}
 
       {agents.length > 0 && (
         <Button
