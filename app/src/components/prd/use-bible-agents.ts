@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { AgentLink, AgentRecommendation, Prd } from "@houston-ai/engine-client";
-import { tauriAgents } from "../../lib/tauri";
+import { tauriAgents, tauriConfig, tauriProvider } from "../../lib/tauri";
 import { useAgentCatalogStore } from "../../stores/agent-catalog";
 import { useAgentStore } from "../../stores/agents";
 import { useUIStore } from "../../stores/ui";
@@ -43,6 +43,18 @@ export function useBibleAgents(
     return lines.length ? `\n\n## ${t("sidebar.bibleSlice")}\n${lines.join("\n")}` : "";
   };
 
+  // Apply the same provider/model preset the Create Agent dialog writes, so a
+  // sidebar-created agent behaves identically to a hand-made one.
+  const applyPreset = async (folderPath: string) => {
+    const { provider: p, model: m } = await tauriProvider.getLastUsed();
+    const cfg = await tauriConfig.read(folderPath);
+    await tauriConfig.write(folderPath, {
+      ...cfg,
+      provider: p as "anthropic" | "openai",
+      model: m ?? undefined,
+    });
+  };
+
   const createOne = async (rec: AgentRecommendation): Promise<AgentLink | null> => {
     if ((status[rec.agentId] ?? "idle") !== "idle") return null;
     const listing = storeCatalog.find((l) => l.id === rec.agentId);
@@ -57,11 +69,12 @@ export function useBibleAgents(
           workspaceId,
           def?.config.name ?? rec.name,
           listing.id,
-          undefined,
+          def?.config.color,
           (def?.config.claudeMd ?? "") + slice,
           def?.path,
           def?.config.agentSeeds,
         );
+        await applyPreset(agent.folderPath);
         id = agent.id;
       } else {
         const gen = await tauriAgents.generateInstructions(`${summary}. ${rec.reason}`, {
@@ -75,6 +88,7 @@ export function useBibleAgents(
           undefined,
           gen.instructions + slice,
         );
+        await applyPreset(agent.folderPath);
         id = agent.id;
       }
       setS(rec.agentId, "done");
@@ -92,6 +106,7 @@ export function useBibleAgents(
       const gen = await tauriAgents.generateInstructions(summary, { provider, model });
       const name = gen.name || t("sidebar.customName");
       const { agent } = await createAgent(workspaceId, name, "blank", undefined, gen.instructions);
+      await applyPreset(agent.folderPath);
       setS("__custom__", "done");
       addToast({ title: t("sidebar.created", { name }), variant: "success" });
       return { id: agent.id, name, cards: [] };
