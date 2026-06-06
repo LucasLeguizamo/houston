@@ -122,7 +122,9 @@
     "delete": "Delete bible",
     "export": "Export",
     "emptyTitle": "No bibles yet",
-    "emptyBody": "Create your first context bible to capture everything about a product or company."
+    "emptyBody": "Create your first context bible to capture everything about a product or company.",
+    "import": "Import",
+    "importFailed": "Couldn't import that file."
   },
   "chat": {
     "title": "Ask Houston",

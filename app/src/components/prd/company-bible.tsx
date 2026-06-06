@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Plus, Sparkles } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   Button,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-  Progress,
   Spinner,
 } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
@@ -21,13 +20,14 @@ import {
   useSaveBible,
 } from "../../hooks/queries";
 import { computeCompleteness, emptyPrd } from "./prd-model";
-import { PrdBibleBar } from "./prd-bible-bar";
+import { PrdHeader } from "./prd-header";
 import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
 import { PrdAgentSidebar } from "./prd-agent-sidebar";
 import { PrdChat } from "./prd-chat";
-import { Centered, ViewTab } from "./prd-bits";
-import { downloadBible } from "./prd-export";
+import { Centered } from "./prd-bits";
+import { downloadBible, parseBibleExport } from "./prd-export";
+import { useUIStore } from "../../stores/ui";
 
 type View = "bible" | "recommend";
 
@@ -97,47 +97,42 @@ export function CompanyBible() {
   const persist = (next: Prd) => save.mutateAsync({ bibleId: selected, prd: next });
   const effectiveMode = mode ?? (completeness === 0 && !prd.role ? "start" : "wiki");
 
+  const importBible = (file: File) =>
+    file
+      .text()
+      .then(parseBibleExport)
+      .then(async (p) => {
+        const m = await create.mutateAsync(p.name);
+        await save.mutateAsync({ bibleId: m.id, prd: p.prd });
+        setSelectedId(m.id);
+        setMode("wiki");
+      })
+      .catch(() =>
+        useUIStore.getState().addToast({ title: t("bibles.importFailed"), variant: "error" }),
+      );
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <header className="border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <BookOpen className="size-5 text-primary" />
-            <h1 className="text-lg font-semibold">{t("title")}</h1>
-          </div>
-          <div className="flex items-center gap-1 rounded-lg bg-secondary p-1">
-            <ViewTab active={view === "bible"} onClick={() => setView("bible")}>
-              {t("tabs.bible")}
-            </ViewTab>
-            <ViewTab active={view === "recommend"} onClick={() => setView("recommend")}>
-              <Sparkles className="size-3.5" />
-              {t("tabs.recommend")}
-            </ViewTab>
-          </div>
-        </div>
-        <div className="mt-3">
-          <PrdBibleBar
-            bibles={bibles}
-            activeId={activeId}
-            selectedId={selected}
-            models={models}
-            model={model}
-            onSelect={(id) => setSelectedId(id)}
-            onCreate={newBible}
-            onActivate={(id) => activate.mutate(id)}
-            onDelete={(id) => remove.mutate(id)}
-            onExport={() => downloadBible(bibles.find((b) => b.id === selected)?.name, prd)}
-            onModel={setModelOverride}
-          />
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <Progress value={completeness} className="h-1.5 max-w-xs" />
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {t("completeness", { percent: completeness })}
-          </span>
-          {save.isPending && <Spinner className="size-3.5" />}
-        </div>
-      </header>
+      <PrdHeader
+        view={view}
+        onView={setView}
+        completeness={completeness}
+        saving={save.isPending}
+        bar={{
+          bibles,
+          activeId,
+          selectedId: selected,
+          models,
+          model,
+          onSelect: setSelectedId,
+          onCreate: newBible,
+          onActivate: (id) => activate.mutate(id),
+          onDelete: (id) => remove.mutate(id),
+          onExport: () => downloadBible(bibles.find((b) => b.id === selected)?.name, prd),
+          onImport: importBible,
+          onModel: setModelOverride,
+        }}
+      />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-3xl">

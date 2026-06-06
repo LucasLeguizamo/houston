@@ -1,5 +1,6 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Star, Trash2, Download } from "lucide-react";
+import { Plus, Star, Trash2, Download, Upload } from "lucide-react";
 import {
   Badge,
   Button,
@@ -27,6 +28,7 @@ export function PrdBibleBar({
   onActivate,
   onDelete,
   onExport,
+  onImport,
   onModel,
 }: {
   bibles: BibleMeta[];
@@ -39,10 +41,12 @@ export function PrdBibleBar({
   onActivate: (id: string) => void;
   onDelete: (id: string) => void;
   onExport: () => void;
+  onImport: (file: File) => void;
   onModel: (id: string) => void;
 }) {
   const { t } = useTranslation("prd");
   const isActive = selectedId === activeId;
+  const fileInput = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -83,6 +87,21 @@ export function PrdBibleBar({
 
       <IconBtn label={t("bibles.export")} onClick={onExport}>
         <Download className="size-4" />
+      </IconBtn>
+
+      <input
+        ref={fileInput}
+        type="file"
+        accept=".json,application/json"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onImport(f);
+          e.target.value = "";
+        }}
+      />
+      <IconBtn label={t("bibles.import")} onClick={() => fileInput.current?.click()}>
+        <Upload className="size-4" />
       </IconBtn>
 
       {bibles.length > 1 && (

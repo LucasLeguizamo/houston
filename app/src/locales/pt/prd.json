@@ -122,7 +122,9 @@
     "delete": "Excluir bíblia",
     "export": "Exportar",
     "emptyTitle": "Ainda não há bíblias",
-    "emptyBody": "Crie sua primeira bíblia de contexto para capturar tudo sobre um produto ou empresa."
+    "emptyBody": "Crie sua primeira bíblia de contexto para capturar tudo sobre um produto ou empresa.",
+    "import": "Importar",
+    "importFailed": "Não foi possível importar esse arquivo."
   },
   "chat": {
     "title": "Pergunte ao Houston",
