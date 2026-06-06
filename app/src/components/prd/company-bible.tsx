@@ -21,7 +21,7 @@ import { useWorkspaceStore } from "../../stores/workspaces";
 import { getDefaultModel, getProvider } from "../../lib/providers";
 import { usePrd, useSavePrd } from "../../hooks/queries";
 import { computeCompleteness, emptyPrd } from "./prd-model";
-import { PrdSections } from "./prd-sections";
+import { PrdWiki } from "./prd-wiki";
 import { PrdOnboardingStart } from "./prd-onboarding-start";
 import { PrdInterview } from "./prd-interview";
 import { PrdRecommendations } from "./prd-recommendations";
@@ -142,7 +142,7 @@ export function CompanyBible() {
                   onComplete={() => setView("recommend")}
                 />
               )}
-              <PrdSections prd={prd} onChange={persist} />
+              <PrdWiki prd={prd} onChange={persist} />
             </div>
           ) : (
             <PrdRecommendations

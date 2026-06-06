@@ -107,5 +107,9 @@
       "skill": "Habilidad"
     }
   },
-  "modelLabel": "Modelo"
+  "modelLabel": "Modelo",
+  "wiki": {
+    "subtitle": "Todo lo que sabemos de tu empresa, en un solo lugar. Toca cualquier tarjeta para editar.",
+    "empty": "Sin completar"
+  }
 }

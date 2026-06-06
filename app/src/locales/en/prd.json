@@ -107,5 +107,9 @@
       "skill": "Skill"
     }
   },
-  "modelLabel": "Model"
+  "modelLabel": "Model",
+  "wiki": {
+    "subtitle": "Everything we know about your company, in one place. Tap any card to edit.",
+    "empty": "Not added yet"
+  }
 }
