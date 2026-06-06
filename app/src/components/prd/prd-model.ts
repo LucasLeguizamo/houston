@@ -111,6 +111,18 @@ export function setField(
   } as Prd;
 }
 
+/**
+ * Clean a model-proposed value before it lands in the bible: drop a leading
+ * "New value:" / "Nuevo valor:" style label and any wrapping quotes the model
+ * adds despite being told to return the value only.
+ */
+export function cleanProposedValue(text: string): string {
+  let s = text.trim();
+  s = s.replace(/^\s*(new value|updated value|nuevo valor|novo valor|valor|value)\s*:\s*/i, "");
+  s = s.replace(/^["“”'']+/, "").replace(/["“”'']+$/, "");
+  return s.trim();
+}
+
 /** True when a single field carries real content. */
 export function isFieldFilled(value: string | string[]): boolean {
   return Array.isArray(value)

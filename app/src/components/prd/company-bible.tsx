@@ -19,7 +19,13 @@ import {
   useDeleteBible,
   useSaveBible,
 } from "../../hooks/queries";
-import { computeCompleteness, emptyPrd, setField, type AskCard } from "./prd-model";
+import {
+  cleanProposedValue,
+  computeCompleteness,
+  emptyPrd,
+  setField,
+  type AskCard,
+} from "./prd-model";
 import { PrdHeader } from "./prd-header";
 import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
@@ -101,10 +107,11 @@ export function CompanyBible() {
 
   // Write a chat-produced value back into the bible card it was about.
   const applyToBible = (card: AskCard, content: string) => {
+    const cleaned = cleanProposedValue(content);
     const value =
       card.kind === "list"
-        ? content.split("\n").map((l) => l.trim()).filter(Boolean)
-        : content.trim();
+        ? cleaned.split("\n").map((l) => cleanProposedValue(l)).filter(Boolean)
+        : cleaned;
     void persist(setField(prd, card.section, card.field, value));
   };
 

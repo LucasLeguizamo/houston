@@ -71,8 +71,9 @@ fn build_prompt(
                 "\nThe user attached this specific bible card to work on:\n{c}\n\
                  When they ask to autocomplete, modify, or extend it (optionally \
                  with extra instructions), reply with ONLY the new value for this \
-                 card — no preamble, no quotes, no closing note — so it can be \
-                 pasted straight back into the bible. For a list card, put one \
+                 card — start directly with the content, with no label like 'New \
+                 value:', no preamble, no quotes, and no closing note — so it can \
+                 be pasted straight back into the bible. For a list card, put one \
                  item per line.\n"
             )
         }
