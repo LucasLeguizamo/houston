@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
 import { Button } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
+import type { AskCard } from "./prd-model";
 import { PrdWiki } from "./prd-wiki";
 import { PrdOnboardingStart } from "./prd-onboarding-start";
 import { PrdInterview } from "./prd-interview";
@@ -27,7 +28,7 @@ export function PrdBibleTab({
   mode: Mode;
   onMode: (m: Mode) => void;
   persist: (next: Prd) => Promise<unknown>;
-  onAsk: (label: string, value: string) => void;
+  onAsk: (card: AskCard) => void;
   onComplete: () => void;
 }) {
   const { t } = useTranslation("prd");

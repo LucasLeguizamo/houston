@@ -136,7 +136,9 @@
       "extend": "Estender"
     },
     "removeContext": "Remover",
-    "placeholderContext": "Diga ao Houston o que mudar, ou escolha uma ação acima..."
+    "placeholderContext": "Diga ao Houston o que mudar, ou escolha uma ação acima...",
+    "update": "Atualizar {{label}}",
+    "updated": "Atualizado"
   },
   "sidebar": {
     "title": "Agentes sugeridos",

@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Send, Sparkles, X } from "lucide-react";
+import { Check, Send, Sparkles, X } from "lucide-react";
 import { Button, cn } from "@houston-ai/core";
 import type { Prd, PrdChatMessage } from "@houston-ai/engine-client";
 import { usePrdChat } from "../../hooks/queries";
 import { PrdThinking } from "./prd-thinking";
+import type { AskCard } from "./prd-model";
 
-type Attached = { label: string; value: string };
+type Msg = PrdChatMessage & { card?: AskCard };
+const ACTIONS = ["autocomplete", "modify", "extend"] as const;
 
-/**
- * Houston chat docked under the Company Bible — a PRD-architect skill grounded in
- * the active bible. Clicking a card attaches it as extra context (a chip) rather
- * than sending; quick actions then ask the model to autocomplete / modify /
- * extend that card.
- */
+// Houston chat docked under the bible (PRD-architect skill). A clicked card
+// attaches as context; the input adds instructions; action buttons autocomplete
+// / modify / extend it; and each card reply gets an "Update bible" button.
 export function PrdChat({
   workspaceId,
   prd,
@@ -21,59 +20,60 @@ export function PrdChat({
   model,
   injected,
   onInjectedConsumed,
+  onApply,
 }: {
   workspaceId: string;
   prd: Prd;
   provider: string;
   model: string;
-  injected: { label: string; value: string; nonce: number } | null;
+  injected: (AskCard & { nonce: number }) | null;
   onInjectedConsumed: () => void;
+  onApply: (card: AskCard, content: string) => void;
 }) {
   const { t } = useTranslation("prd");
   const chat = usePrdChat(workspaceId);
-  const [messages, setMessages] = useState<PrdChatMessage[]>([]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
-  const [attached, setAttached] = useState<Attached | null>(null);
+  const [attached, setAttached] = useState<AskCard | null>(null);
+  const [applied, setApplied] = useState<Set<number>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const send = (text: string) => {
     const msg = text.trim();
     if (!msg || chat.isPending) return;
-    const history = messages;
-    const context = attached ? `${attached.label}: ${attached.value}` : undefined;
-    setMessages([...history, { role: "user", content: msg }]);
+    const card = attached ?? undefined;
+    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+    setMessages((m) => [...m, { role: "user", content: msg }]);
     setInput("");
     chat.mutate(
-      { prd, messages: history, message: msg, context, provider, model },
+      {
+        prd,
+        messages: history,
+        message: msg,
+        context: card ? `${card.label}: ${card.value}` : undefined,
+        provider,
+        model,
+      },
       {
         onSuccess: (reply) =>
-          setMessages((m) => [...m, { role: "assistant", content: reply }]),
-        // Drop the optimistic bubble on failure; the call wrapper already toasted.
+          setMessages((m) => [...m, { role: "assistant", content: reply, card }]),
         onError: () => setMessages((m) => m.slice(0, -1)),
       },
     );
   };
-
   // A card was clicked: attach it as context and focus the input — don't send.
   useEffect(() => {
     if (!injected) return;
-    setAttached({ label: injected.label, value: injected.value });
+    const { nonce: _n, ...card } = injected;
+    setAttached(card);
     inputRef.current?.focus();
     onInjectedConsumed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [injected?.nonce]);
-
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, chat.isPending]);
-
-  const actions: Array<"autocomplete" | "modify" | "extend"> = [
-    "autocomplete",
-    "modify",
-    "extend",
-  ];
-
   return (
     <div className="shrink-0 border-t border-border bg-background">
       <div className="mx-auto w-full max-w-3xl px-6 py-3">
@@ -89,13 +89,37 @@ export function PrdChat({
                 <div
                   key={i}
                   className={cn(
-                    "max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
-                    m.role === "user"
-                      ? "self-end bg-primary text-primary-foreground"
-                      : "self-start bg-background",
+                    "flex flex-col gap-1",
+                    m.role === "user" ? "items-end" : "items-start",
                   )}
                 >
-                  {m.content}
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
+                      m.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background",
+                    )}
+                  >
+                    {m.content}
+                  </div>
+                  {m.role === "assistant" && m.card && (
+                    <Button
+                      size="sm"
+                      variant={applied.has(i) ? "secondary" : "default"}
+                      className="h-7 rounded-full text-xs"
+                      disabled={applied.has(i)}
+                      onClick={() => {
+                        onApply(m.card!, m.content);
+                        setApplied((s) => new Set(s).add(i));
+                      }}
+                    >
+                      <Check className="size-3.5" />
+                      {applied.has(i)
+                        ? t("chat.updated")
+                        : t("chat.update", { label: m.card.label })}
+                    </Button>
+                  )}
                 </div>
               ))}
               {chat.isPending && (
@@ -121,12 +145,14 @@ export function PrdChat({
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {actions.map((a) => (
+              {ACTIONS.map((a) => (
                 <button
                   key={a}
                   type="button"
                   disabled={chat.isPending}
-                  onClick={() => send(t(`chat.actions.${a}`))}
+                  onClick={() =>
+                    send(input.trim() ? `${t(`chat.actions.${a}`)}. ${input.trim()}` : t(`chat.actions.${a}`))
+                  }
                   className={cn(
                     "rounded-full border border-border bg-secondary px-3 py-1 text-xs",
                     "transition-colors hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50",

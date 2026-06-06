@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
-import { SECTIONS, getField, isFieldFilled } from "./prd-model";
+import { SECTIONS, getField, isFieldFilled, type AskCard } from "./prd-model";
 import { FieldDialog } from "./prd-field-dialog";
 
 const SECTION_ICON: Record<string, LucideIcon> = {
@@ -44,8 +44,8 @@ export function PrdWiki({
 }: {
   prd: Prd;
   onChange: (next: Prd) => void;
-  /** Send a field to the Houston chat ("how should we implement this?"). */
-  onAsk?: (label: string, value: string) => void;
+  /** Attach a field to the Houston chat as context. */
+  onAsk?: (card: AskCard) => void;
 }) {
   const { t } = useTranslation("prd");
   const [editing, setEditing] = useState<{ section: string; field: string; kind: "text" | "list" } | null>(null);
@@ -72,7 +72,14 @@ export function PrdWiki({
                 // Primary click sends the card into the Houston chat so it can
                 // propose an edit / extension / modification. The pencil opens
                 // the manual editor.
-                const ask = () => onAsk?.(label, filled ? preview(value) : "");
+                const ask = () =>
+                  onAsk?.({
+                    section: section.id,
+                    field: field.key,
+                    kind: field.kind,
+                    label,
+                    value: filled ? preview(value) : "",
+                  });
                 const edit = () =>
                   setEditing({ section: section.id, field: field.key, kind: field.kind });
                 return (

@@ -19,7 +19,7 @@ import {
   useDeleteBible,
   useSaveBible,
 } from "../../hooks/queries";
-import { computeCompleteness, emptyPrd } from "./prd-model";
+import { computeCompleteness, emptyPrd, setField, type AskCard } from "./prd-model";
 import { PrdHeader } from "./prd-header";
 import { PrdBibleTab } from "./prd-bible-tab";
 import { PrdRecommendations } from "./prd-recommendations";
@@ -44,11 +44,9 @@ export function CompanyBible() {
   const [view, setView] = useState<View>("bible");
   const [mode, setMode] = useState<"start" | "interview" | "wiki" | null>(null);
   const [modelOverride, setModelOverride] = useState<string | null>(null);
-  const [injected, setInjected] = useState<{
-    label: string;
-    value: string;
-    nonce: number;
-  } | null>(null);
+  const [injected, setInjected] = useState<(AskCard & { nonce: number }) | null>(
+    null,
+  );
 
   const bibles = list?.bibles ?? [];
   const activeId = list?.activeId ?? "";
@@ -100,6 +98,15 @@ export function CompanyBible() {
 
   const persist = (next: Prd) => save.mutateAsync({ bibleId: selected, prd: next });
   const effectiveMode = mode ?? (completeness === 0 && !prd.role ? "start" : "wiki");
+
+  // Write a chat-produced value back into the bible card it was about.
+  const applyToBible = (card: AskCard, content: string) => {
+    const value =
+      card.kind === "list"
+        ? content.split("\n").map((l) => l.trim()).filter(Boolean)
+        : content.trim();
+    void persist(setField(prd, card.section, card.field, value));
+  };
 
   const importBible = (file: File) =>
     file
@@ -153,9 +160,7 @@ export function CompanyBible() {
               mode={effectiveMode}
               onMode={setMode}
               persist={persist}
-              onAsk={(label, value) =>
-                setInjected({ label, value, nonce: Date.now() })
-              }
+              onAsk={(card) => setInjected({ ...card, nonce: Date.now() })}
               onComplete={() => {
                 setMode("wiki");
                 setView("recommend");
@@ -185,6 +190,7 @@ export function CompanyBible() {
         model={model}
         injected={injected}
         onInjectedConsumed={() => setInjected(null)}
+        onApply={applyToBible}
       />
     </div>
   );

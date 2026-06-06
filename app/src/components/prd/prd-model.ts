@@ -17,6 +17,15 @@ export interface SectionDesc {
   fields: FieldDesc[];
 }
 
+/** A bible card handed to the Houston chat as context. */
+export interface AskCard {
+  section: string;
+  field: string;
+  kind: FieldKind;
+  label: string;
+  value: string;
+}
+
 export const SECTIONS: SectionDesc[] = [
   {
     id: "company",

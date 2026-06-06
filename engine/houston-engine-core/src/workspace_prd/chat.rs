@@ -69,9 +69,11 @@ fn build_prompt(
             let c = serde_json::to_string(c).unwrap_or_else(|_| format!("{c:?}"));
             format!(
                 "\nThe user attached this specific bible card to work on:\n{c}\n\
-                 When they ask to autocomplete, modify, or extend, focus on THIS \
-                 card and return a concrete, paste-ready new value for it (a tight \
-                 sentence or short list), then one short line on what changed.\n"
+                 When they ask to autocomplete, modify, or extend it (optionally \
+                 with extra instructions), reply with ONLY the new value for this \
+                 card — no preamble, no quotes, no closing note — so it can be \
+                 pasted straight back into the bible. For a list card, put one \
+                 item per line.\n"
             )
         }
         None => String::new(),
