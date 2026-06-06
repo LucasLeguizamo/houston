@@ -8,6 +8,7 @@ import { tauriAgents } from "../../lib/tauri";
 import { useAgentCatalogStore } from "../../stores/agent-catalog";
 import { useAgentStore } from "../../stores/agents";
 import { useUIStore } from "../../stores/ui";
+import { getField } from "./prd-model";
 
 type Status = "idle" | "busy" | "done";
 
@@ -43,8 +44,25 @@ export function PrdAgentSidebar({
   const setS = (key: string, s: Status) =>
     setStatus((m) => ({ ...m, [key]: s }));
 
-  const createFromStore = async (rec: AgentRecommendation) => {
+  // Render the agent's assigned bible cards as a markdown block to graft onto
+  // its instructions, so each agent owns its slice of the bible.
+  const buildExcerpt = (cards: string[]): string => {
+    const lines = cards
+      .map((key) => {
+        const [section, field] = key.split(".");
+        if (!section || !field) return null;
+        const v = getField(prd, section, field);
+        const text = Array.isArray(v) ? v.filter((x) => x.trim()).join(", ") : v;
+        return text.trim() ? `- ${t(`fields.${section}.${field}`)}: ${text.trim()}` : null;
+      })
+      .filter(Boolean);
+    return lines.length ? `\n\n## ${t("sidebar.bibleSlice")}\n${lines.join("\n")}` : "";
+  };
+
+  const createOne = async (rec: AgentRecommendation) => {
+    if ((status[rec.agentId] ?? "idle") !== "idle") return;
     const listing = storeCatalog.find((l) => l.id === rec.agentId);
+    const excerpt = buildExcerpt(rec.relevantCards ?? []);
     setS(rec.agentId, "busy");
     try {
       if (listing) {
@@ -55,21 +73,27 @@ export function PrdAgentSidebar({
           def?.config.name ?? rec.name,
           listing.id,
           undefined,
-          def?.config.claudeMd,
+          (def?.config.claudeMd ?? "") + excerpt,
           def?.path,
           def?.config.agentSeeds,
         );
       } else {
-        const gen = await tauriAgents.generateInstructions(
-          `${summary}. ${rec.reason}`,
-          { provider, model },
-        );
-        await createAgent(workspaceId, gen.name || rec.name, "blank", undefined, gen.instructions);
+        const gen = await tauriAgents.generateInstructions(`${summary}. ${rec.reason}`, {
+          provider,
+          model,
+        });
+        await createAgent(workspaceId, gen.name || rec.name, "blank", undefined, gen.instructions + excerpt);
       }
       setS(rec.agentId, "done");
       addToast({ title: t("sidebar.created", { name: rec.name }), variant: "success" });
     } catch {
       setS(rec.agentId, "idle"); // tauri wrappers already toasted the reason
+    }
+  };
+
+  const createAll = async () => {
+    for (const rec of recommend.data?.agents ?? []) {
+      await createOne(rec);
     }
   };
 
@@ -105,6 +129,19 @@ export function PrdAgentSidebar({
         {recommend.data ? t("sidebar.refresh") : t("sidebar.suggest")}
       </Button>
 
+      {agents.length > 0 && (
+        <Button
+          size="sm"
+          variant="secondary"
+          className="rounded-full"
+          onClick={createAll}
+          disabled={agents.every((a) => (status[a.agentId] ?? "idle") !== "idle")}
+        >
+          <Plus className="size-4" />
+          {t("sidebar.createAll")}
+        </Button>
+      )}
+
       {agents.map((rec) => {
         const s = status[rec.agentId] ?? "idle";
         return (
@@ -118,7 +155,7 @@ export function PrdAgentSidebar({
               size="sm"
               variant={s === "done" ? "secondary" : "default"}
               className="mt-2 w-full rounded-full"
-              onClick={() => createFromStore(rec)}
+              onClick={() => createOne(rec)}
               disabled={s !== "idle"}
             >
               {s === "busy" ? (

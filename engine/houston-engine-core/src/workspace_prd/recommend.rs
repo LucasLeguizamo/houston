@@ -28,6 +28,10 @@ pub struct AgentRec {
     pub reason: String,
     #[serde(default)]
     pub matched_needs: Vec<String>,
+    /// Bible cards this agent should own, as "section.field" keys (e.g.
+    /// "operations.painPoints"). Used to seed the agent with its slice.
+    #[serde(default)]
+    pub relevant_cards: Vec<String>,
     /// 0.0–1.0 fit score.
     pub relevance: f32,
 }
@@ -111,13 +115,23 @@ intel, a pm wants product/user work, a founder wants broad leverage. For each
 agent give a one-sentence reason in plain language and list the specific needs
 it covers. Give a relevance score from 0.0 to 1.0.
 
+For each agent also give "relevantCards": the bible cards this agent should own,
+as "section.field" keys drawn ONLY from this schema:
+company.{{name,oneLiner,stage,industry,website,mission}},
+product.{{whatItIs,problemSolved,keyFeatures,differentiators}},
+market.{{idealCustomer,competitors,positioning}},
+businessModel.{{pricing,revenueStreams,channels}},
+goals.{{northStar,objectives,successMetrics}},
+operations.{{team,painPoints}}, brand.{{voice,links}}.
+Pick the 2-5 cards most relevant to that agent's job.
+
 Also propose 2-4 concrete strategies the company should run: each is either a
 recurring "routine" (a scheduled task an agent does, e.g. a weekly pipeline
 review) or a "skill" (a repeatable play, e.g. drafting outreach). Keep titles
 short and descriptions to one sentence, no jargon.
 
 Return ONLY valid JSON (no markdown fences), shaped exactly like this:
-{{"agents":[{{"agentId":"sales","name":"Sales","reason":"...","matchedNeeds":["..."],"relevance":0.9}}],"strategies":[{{"kind":"routine","title":"...","description":"...","reason":"..."}}]}}"#
+{{"agents":[{{"agentId":"sales","name":"Sales","reason":"...","matchedNeeds":["..."],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}}],"strategies":[{{"kind":"routine","title":"...","description":"...","reason":"..."}}]}}"#
     )
 }
 
@@ -202,10 +216,11 @@ mod tests {
 
     #[test]
     fn parses_agents_and_strategies() {
-        let raw = r#"{"agents":[{"agentId":"sales","name":"Sales","reason":"r","matchedNeeds":["leads"],"relevance":0.9}],"strategies":[{"kind":"routine","title":"Weekly review","description":"d","reason":"r"}]}"#;
+        let raw = r#"{"agents":[{"agentId":"sales","name":"Sales","reason":"r","matchedNeeds":["leads"],"relevantCards":["market.idealCustomer","operations.painPoints"],"relevance":0.9}],"strategies":[{"kind":"routine","title":"Weekly review","description":"d","reason":"r"}]}"#;
         let recs = parse_result(raw).unwrap();
         assert_eq!(recs.agents.len(), 1);
         assert_eq!(recs.agents[0].agent_id, "sales");
+        assert_eq!(recs.agents[0].relevant_cards, vec!["market.idealCustomer", "operations.painPoints"]);
         assert_eq!(recs.strategies[0].kind, "routine");
     }
 

@@ -140,6 +140,8 @@
     "added": "Agregado",
     "created": "{{name}} agregado",
     "generateCustom": "Generar agente a medida",
-    "customName": "Agente a medida"
+    "customName": "Agente a medida",
+    "createAll": "Crear todos",
+    "bibleSlice": "Tu parte de la biblia de empresa"
   }
 }

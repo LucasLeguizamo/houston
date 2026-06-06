@@ -231,6 +231,8 @@ export interface AgentRecommendation {
   name: string;
   reason: string;
   matchedNeeds: string[];
+  /** Bible cards this agent should own, as "section.field" keys. */
+  relevantCards: string[];
   relevance: number;
 }
 
