@@ -58,7 +58,10 @@ export function CompanyBible() {
   const activeId = list?.activeId ?? "";
   const selected = selectedId ?? (activeId || bibles[0]?.id || "");
   const provider = workspace?.provider ?? "anthropic";
-  const model = modelOverride ?? workspace?.model ?? getDefaultModel(provider);
+  // Default to the provider's fast model for these one-shot PRD calls (the
+  // workspace may be pinned to a slow model like Opus, which times out on the
+  // bigger recommend/interview prompts). The user can still pick another above.
+  const model = modelOverride ?? getDefaultModel(provider);
   const models = getProvider(provider)?.models ?? [];
   const { data: bibleData } = useBible(workspaceId, selected || undefined);
   const prd: Prd = bibleData ?? emptyPrd();

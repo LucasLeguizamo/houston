@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::Duration;
 
-const TIMEOUT: Duration = Duration::from_secs(60);
+const TIMEOUT: Duration = Duration::from_secs(120);
 const CLAUDE_MODEL: &str = "sonnet";
 const CODEX_MODEL: &str = "gpt-5.5";
 const GEMINI_MODEL: &str = "gemini-3.1-flash-lite";
