@@ -138,7 +138,13 @@
     "removeContext": "Remove",
     "placeholderContext": "Tell Houston what to change, or pick an action above...",
     "update": "Update {{label}}",
-    "updated": "Updated"
+    "updated": "Updated",
+    "presets": {
+      "autocomplete": "Autocomplete this card",
+      "modify": "Modify this card to ",
+      "extend": "Extend this card with "
+    },
+    "clear": "Clear"
   },
   "sidebar": {
     "title": "Suggested agents",

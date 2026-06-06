@@ -138,7 +138,13 @@
     "removeContext": "Remover",
     "placeholderContext": "Diga ao Houston o que mudar, ou escolha uma ação acima...",
     "update": "Atualizar {{label}}",
-    "updated": "Atualizado"
+    "updated": "Atualizado",
+    "presets": {
+      "autocomplete": "Autocomplete este cartão",
+      "modify": "Modifique este cartão para ",
+      "extend": "Estenda este cartão com "
+    },
+    "clear": "Limpar"
   },
   "sidebar": {
     "title": "Agentes sugeridos",

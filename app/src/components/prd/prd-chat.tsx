@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Send, Sparkles, X } from "lucide-react";
+import { Send, Sparkles, X } from "lucide-react";
 import { Button, cn } from "@houston-ai/core";
-import type { Prd, PrdChatMessage } from "@houston-ai/engine-client";
+import type { Prd } from "@houston-ai/engine-client";
 import { usePrdChat } from "../../hooks/queries";
-import { PrdThinking } from "./prd-thinking";
+import { PrdChatLog, type ChatMsg } from "./prd-chat-log";
 import type { AskCard } from "./prd-model";
 
-type Msg = PrdChatMessage & { card?: AskCard };
 const ACTIONS = ["autocomplete", "modify", "extend"] as const;
 
 // Houston chat docked under the bible (PRD-architect skill). A clicked card
@@ -32,11 +31,10 @@ export function PrdChat({
 }) {
   const { t } = useTranslation("prd");
   const chat = usePrdChat(workspaceId);
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [attached, setAttached] = useState<AskCard | null>(null);
   const [applied, setApplied] = useState<Set<number>>(new Set());
-  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const send = (text: string) => {
@@ -71,65 +69,35 @@ export function PrdChat({
     onInjectedConsumed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [injected?.nonce]);
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages, chat.isPending]);
   return (
     <div className="shrink-0 border-t border-border bg-background">
       <div className="mx-auto w-full max-w-3xl px-6 py-3">
         <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Sparkles className="size-3.5 text-primary" />
           {t("chat.title")}
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setMessages([]);
+                setApplied(new Set());
+              }}
+              className="ml-auto rounded-full px-2 py-0.5 hover:bg-secondary hover:text-foreground"
+            >
+              {t("chat.clear")}
+            </button>
+          )}
         </div>
 
-        {(messages.length > 0 || chat.isPending) && (
-          <div ref={scrollRef} className="mb-2 max-h-56 overflow-y-auto rounded-xl bg-secondary/50 p-3">
-            <div className="flex flex-col gap-2">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "flex flex-col gap-1",
-                    m.role === "user" ? "items-end" : "items-start",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
-                      m.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background",
-                    )}
-                  >
-                    {m.content}
-                  </div>
-                  {m.role === "assistant" && m.card && (
-                    <Button
-                      size="sm"
-                      variant={applied.has(i) ? "secondary" : "default"}
-                      className="h-7 rounded-full text-xs"
-                      disabled={applied.has(i)}
-                      onClick={() => {
-                        onApply(m.card!, m.content);
-                        setApplied((s) => new Set(s).add(i));
-                      }}
-                    >
-                      <Check className="size-3.5" />
-                      {applied.has(i)
-                        ? t("chat.updated")
-                        : t("chat.update", { label: m.card.label })}
-                    </Button>
-                  )}
-                </div>
-              ))}
-              {chat.isPending && (
-                <div className="self-start rounded-lg bg-background px-3 py-2 text-sm">
-                  <PrdThinking phrases={[t("thinking.replying")]} />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <PrdChatLog
+          messages={messages}
+          pending={chat.isPending}
+          applied={applied}
+          onApply={(i, card, content) => {
+            onApply(card, content);
+            setApplied((s) => new Set(s).add(i));
+          }}
+        />
 
         {attached && (
           <div className="mb-2 flex flex-col gap-2">
@@ -149,13 +117,14 @@ export function PrdChat({
                 <button
                   key={a}
                   type="button"
-                  disabled={chat.isPending}
-                  onClick={() =>
-                    send(input.trim() ? `${t(`chat.actions.${a}`)}. ${input.trim()}` : t(`chat.actions.${a}`))
-                  }
+                  // Preset: fill the prompt so the user can tweak it, then send.
+                  onClick={() => {
+                    setInput(t(`chat.presets.${a}`));
+                    inputRef.current?.focus();
+                  }}
                   className={cn(
                     "rounded-full border border-border bg-secondary px-3 py-1 text-xs",
-                    "transition-colors hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50",
+                    "transition-colors hover:bg-primary/10 hover:border-primary/30",
                   )}
                 >
                   {t(`chat.actions.${a}`)}
