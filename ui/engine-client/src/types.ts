@@ -160,6 +160,8 @@ export interface PrdInterviewRequest {
 export interface PrdInterviewTurn {
   prd: Prd;
   nextQuestion?: string;
+  /** Short tap-to-answer suggestions for `nextQuestion`. */
+  suggestions: string[];
   complete: boolean;
 }
 

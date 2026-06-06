@@ -87,7 +87,9 @@ export function CompanyBible() {
               <PrdInterview
                 workspaceId={workspace.id}
                 prd={prd}
+                completeness={completeness}
                 onPrdUpdate={persist}
+                onComplete={() => setView("recommend")}
               />
               <PrdSections prd={prd} onChange={persist} />
             </div>

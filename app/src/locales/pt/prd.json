@@ -10,13 +10,19 @@
     "description": "Escolha ou crie um espaço de trabalho para começar a bíblia da empresa."
   },
   "interview": {
-    "title": "Configuração guiada",
-    "intro": "Responda algumas perguntas rápidas e eu monto a bíblia da sua empresa para você.",
-    "start": "Iniciar configuração guiada",
+    "welcomeTitle": "Vamos construir a bíblia da sua empresa",
+    "welcomeBody": "Responda algumas perguntas rápidas e eu capturo tudo sobre sua empresa. Toque em uma sugestão ou escreva a sua.",
+    "start": "Começar",
+    "stepLabel": "Pergunta {{step}} · {{percent}}% completo",
     "thinking": "Pensando...",
-    "complete": "Sua bíblia da empresa está sólida. Você pode continuar editando qualquer seção abaixo.",
-    "answerPlaceholder": "Digite sua resposta...",
-    "send": "Enviar"
+    "suggestionsHint": "Escolha uma ou escreva a sua",
+    "orType": "Ou digite sua resposta...",
+    "skipQuestion": "Pular",
+    "continue": "Continuar",
+    "doneTitle": "Sua bíblia da empresa está pronta",
+    "complete": "Bom trabalho. Você pode continuar editando qualquer seção abaixo, ou ver quais agentes combinam com sua empresa.",
+    "keepGoing": "Continuar",
+    "viewRecommendations": "Ver recomendações"
   },
   "fields": {
     "textPlaceholder": "Adicione detalhes...",

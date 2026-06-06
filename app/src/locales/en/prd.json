@@ -10,13 +10,19 @@
     "description": "Pick or create a workspace to start its company bible."
   },
   "interview": {
-    "title": "Guided setup",
-    "intro": "Answer a few quick questions and I'll build your company's bible for you.",
-    "start": "Start guided setup",
+    "welcomeTitle": "Let's build your company bible",
+    "welcomeBody": "Answer a few quick questions and I'll capture everything about your company. Tap a suggestion or type your own.",
+    "start": "Start",
+    "stepLabel": "Question {{step}} · {{percent}}% complete",
     "thinking": "Thinking...",
-    "complete": "Your company bible looks solid. You can keep editing any section below.",
-    "answerPlaceholder": "Type your answer...",
-    "send": "Send"
+    "suggestionsHint": "Pick one or write your own",
+    "orType": "Or type your answer...",
+    "skipQuestion": "Skip",
+    "continue": "Continue",
+    "doneTitle": "Your company bible is ready",
+    "complete": "Nice work. You can keep editing any section below, or see which agents fit your company.",
+    "keepGoing": "Keep going",
+    "viewRecommendations": "See recommendations"
   },
   "fields": {
     "textPlaceholder": "Add details...",

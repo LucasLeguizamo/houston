@@ -27,6 +27,10 @@ pub struct InterviewTurn {
     /// The next question to ask, or `None` when the bible is solid enough.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub next_question: Option<String>,
+    /// A few short, plausible example answers for `next_question` so the user
+    /// can tap a suggestion instead of typing. Empty when there's no question.
+    #[serde(default)]
+    pub suggestions: Vec<String>,
     /// True when the model judges the bible complete enough to stop.
     pub complete: bool,
 }
@@ -70,7 +74,11 @@ Do this:
 2. Choose the SINGLE most valuable next question to ask, targeting the emptiest
    or weakest area. Phrase it warmly, in plain language, no jargon, no mention
    of files, fields, or JSON. One sentence.
-3. If the bible already covers the company, product, market, business model,
+3. Offer 3 or 4 short example answers for that question in "suggestions" so the
+   user can tap one instead of typing. Each is at most 6 words, concrete, and
+   tailored to what you already know about this company. Use an empty array
+   only when there is no next question.
+4. If the bible already covers the company, product, market, business model,
    goals, and operations well enough to be useful, set "complete" to true and
    set "nextQuestion" to null.
 
@@ -84,7 +92,7 @@ operations {{ team, painPoints[] }}
 brand {{ voice, links[] }}
 
 Return ONLY valid JSON (no markdown fences), shaped exactly like this:
-{{"prd": {{ ...the full updated bible... }}, "nextQuestion": "...", "complete": false}}"#
+{{"prd": {{ ...the full updated bible... }}, "nextQuestion": "...", "suggestions": ["...", "...", "..."], "complete": false}}"#
     )
 }
 
@@ -135,6 +143,22 @@ fn parse_result(raw: &str) -> Result<InterviewTurn, String> {
         .filter(|s| !s.is_empty())
         .map(str::to_string);
 
+    // Suggestions only make sense alongside a question; drop them otherwise.
+    let suggestions = if next_question.is_some() {
+        v.get("suggestions")
+            .and_then(Value::as_array)
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|s| s.as_str().map(str::trim))
+                    .filter(|s| !s.is_empty())
+                    .map(str::to_string)
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
     let complete = v
         .get("complete")
         .and_then(Value::as_bool)
@@ -144,6 +168,7 @@ fn parse_result(raw: &str) -> Result<InterviewTurn, String> {
     Ok(InterviewTurn {
         prd,
         next_question,
+        suggestions,
         complete,
     })
 }
@@ -154,11 +179,21 @@ mod tests {
 
     #[test]
     fn parses_valid_turn() {
-        let raw = r#"{"prd":{"company":{"name":"Acme"}},"nextQuestion":"What do you sell?","complete":false}"#;
+        let raw = r#"{"prd":{"company":{"name":"Acme"}},"nextQuestion":"What do you sell?","suggestions":["Software","Consulting","  ",42],"complete":false}"#;
         let turn = parse_result(raw).unwrap();
         assert_eq!(turn.prd.company.name, "Acme");
         assert_eq!(turn.next_question.as_deref(), Some("What do you sell?"));
+        // Blank + non-string suggestions are filtered out.
+        assert_eq!(turn.suggestions, vec!["Software", "Consulting"]);
         assert!(!turn.complete);
+    }
+
+    #[test]
+    fn suggestions_cleared_when_no_question() {
+        let raw = r#"{"prd":{},"nextQuestion":null,"suggestions":["x"],"complete":true}"#;
+        let turn = parse_result(raw).unwrap();
+        assert!(turn.suggestions.is_empty());
+        assert!(turn.complete);
     }
 
     #[test]
