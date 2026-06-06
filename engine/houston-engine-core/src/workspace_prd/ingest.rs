@@ -18,20 +18,41 @@ const GEMINI_MODEL: &str = "gemini-3.1-flash-lite";
 /// Cap the material we feed the model so a huge page can't blow the prompt.
 const MAX_CHARS: usize = 12_000;
 
+/// Browser-like UA so sites don't 403 a bare client.
+const USER_AGENT: &str =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 \
+     (KHTML, like Gecko) Houston/1.0 Safari/537.36";
+
+/// Normalize user-typed URLs: trim and assume `https://` when no scheme is
+/// given, so `acme.com` and `www.acme.com` work, not just full URLs.
+fn normalize_url(url: &str) -> CoreResult<String> {
+    let url = url.trim();
+    if url.is_empty() {
+        return Err(CoreError::BadRequest("enter a website address".into()));
+    }
+    if url.starts_with("http://") || url.starts_with("https://") {
+        Ok(url.to_string())
+    } else {
+        Ok(format!("https://{url}"))
+    }
+}
+
 /// Fetch a URL and reduce it to readable text, bounded to `MAX_CHARS`.
 pub async fn fetch_url_text(url: &str) -> CoreResult<String> {
-    let url = url.trim();
-    if !(url.starts_with("http://") || url.starts_with("https://")) {
-        return Err(CoreError::BadRequest(
-            "URL must start with http:// or https://".into(),
-        ));
-    }
-    let resp = reqwest::get(url)
+    let url = normalize_url(url)?;
+    let client = reqwest::Client::builder()
+        .user_agent(USER_AGENT)
+        .timeout(Duration::from_secs(20))
+        .build()
+        .map_err(|e| CoreError::Internal(format!("http client: {e}")))?;
+    let resp = client
+        .get(&url)
+        .send()
         .await
-        .map_err(|e| CoreError::Internal(format!("could not fetch {url}: {e}")))?;
+        .map_err(|e| CoreError::Internal(format!("could not reach {url}: {e}")))?;
     if !resp.status().is_success() {
         return Err(CoreError::Internal(format!(
-            "fetching {url} returned {}",
+            "{url} returned {}",
             resp.status()
         )));
     }
@@ -41,7 +62,9 @@ pub async fn fetch_url_text(url: &str) -> CoreResult<String> {
         .map_err(|e| CoreError::Internal(format!("could not read {url}: {e}")))?;
     let text = strip_html(&body);
     if text.trim().is_empty() {
-        return Err(CoreError::Internal(format!("no readable text at {url}")));
+        return Err(CoreError::Internal(format!(
+            "couldn't find readable text at {url}"
+        )));
     }
     Ok(text)
 }
@@ -178,6 +201,15 @@ fn parse_result(raw: &str) -> Result<Prd, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn normalize_url_adds_scheme_when_missing() {
+        assert_eq!(normalize_url("acme.com").unwrap(), "https://acme.com");
+        assert_eq!(normalize_url("  www.acme.com ").unwrap(), "https://www.acme.com");
+        assert_eq!(normalize_url("http://x.io").unwrap(), "http://x.io");
+        assert_eq!(normalize_url("https://x.io").unwrap(), "https://x.io");
+        assert!(normalize_url("   ").is_err());
+    }
 
     #[test]
     fn strip_html_drops_tags_scripts_styles() {
