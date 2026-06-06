@@ -9,10 +9,28 @@
     "title": "Sin espacio de trabajo seleccionado",
     "description": "Elige o crea un espacio de trabajo para empezar su biblia de empresa."
   },
+  "roles": {
+    "founder": "Fundador",
+    "cLevel": "Nivel C",
+    "vp": "VP",
+    "pm": "Product manager",
+    "investor": "Inversionista",
+    "operator": "Operador"
+  },
+  "start": {
+    "title": "Configuremos la biblia de tu empresa",
+    "body": "Primero, ¿quién eres? Adapto las preguntas a lo que importa para tu rol.",
+    "roleQuestion": "¿Cuál es tu rol?",
+    "ingestTitle": "Acelera (opcional)",
+    "ingestBody": "Agrega tu sitio web o un documento y pre-lleno lo que pueda.",
+    "urlPlaceholder": "https://tuempresa.com",
+    "uploadDoc": "Subir un documento",
+    "docNote": "Los archivos de texto funcionan mejor (.txt, .md). PDF próximamente.",
+    "continue": "Continuar",
+    "skip": "Omitir",
+    "ingesting": "Leyendo tu material..."
+  },
   "interview": {
-    "welcomeTitle": "Construyamos la biblia de tu empresa",
-    "welcomeBody": "Responde unas preguntas rápidas y capturo todo sobre tu empresa. Toca una sugerencia o escribe la tuya.",
-    "start": "Empezar",
     "stepLabel": "Pregunta {{step}} · {{percent}}% completo",
     "thinking": "Pensando...",
     "suggestionsHint": "Elige una o escribe la tuya",

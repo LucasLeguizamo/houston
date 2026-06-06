@@ -9,6 +9,7 @@ use axum::{
 };
 use houston_engine_core::agents_crud::{self, Agent, CreateAgent, CreateAgentResult, UpdateAgent};
 use houston_engine_core::workspace_context::{self, WorkspaceContext};
+use houston_engine_core::workspace_prd::ingest::{fetch_url_text, ingest};
 use houston_engine_core::workspace_prd::interview::{interview, InterviewTurn};
 use houston_engine_core::workspace_prd::recommend::{recommend, Recommendations};
 use houston_engine_core::workspace_prd::{self, Prd};
@@ -32,6 +33,7 @@ pub fn router() -> Router<Arc<ServerState>> {
         .route("/workspaces/:id/prd", get(get_prd).put(put_prd))
         .route("/workspaces/:id/prd/interview", post(prd_interview))
         .route("/workspaces/:id/prd/recommend", post(prd_recommend))
+        .route("/workspaces/:id/prd/ingest", post(prd_ingest))
         // Workspace-scoped agents CRUD.
         .route(
             "/workspaces/:id/agents",
@@ -200,6 +202,40 @@ async fn prd_recommend(
     let (provider, model) = resolve_oneshot(body.provider, body.model)?;
     let recs = recommend(&prd, &catalog, provider, model.as_deref()).await?;
     Ok(Json(recs))
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PrdIngestBody {
+    /// The client's current bible (the merged copy is returned to be saved).
+    prd: Prd,
+    /// A website to fetch + extract, or raw document text. Exactly one is used:
+    /// a non-empty `url` wins, otherwise `text`.
+    #[serde(default)]
+    url: Option<String>,
+    #[serde(default)]
+    text: Option<String>,
+    #[serde(default)]
+    provider: Option<String>,
+    #[serde(default)]
+    model: Option<String>,
+}
+
+async fn prd_ingest(
+    State(_st): State<Arc<ServerState>>,
+    Path(_id): Path<String>,
+    Json(body): Json<PrdIngestBody>,
+) -> Result<Json<Prd>, ApiError> {
+    let material = match body.url.as_deref().map(str::trim).filter(|u| !u.is_empty()) {
+        Some(url) => fetch_url_text(url).await?,
+        None => body
+            .text
+            .filter(|t| !t.trim().is_empty())
+            .ok_or_else(|| CoreError::BadRequest("provide a url or document text".into()))?,
+    };
+    let (provider, model) = resolve_oneshot(body.provider, body.model)?;
+    let merged = ingest(&body.prd, &material, provider, model.as_deref()).await?;
+    Ok(Json(merged))
 }
 
 // -- Workspace-scoped agent CRUD --

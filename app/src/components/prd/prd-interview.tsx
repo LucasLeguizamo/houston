@@ -1,18 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Button, Spinner, cn } from "@houston-ai/core";
 import type { Prd } from "@houston-ai/engine-client";
 import { usePrdInterview } from "../../hooks/queries";
 
-type Phase = "welcome" | "asking" | "done";
-
 /**
- * Guided onboarding for the Company Bible, styled after Houston's coachmark
- * tutorial (UiTour): one big question + tap-to-answer suggestion chips so a
- * non-technical user rarely types. Each turn folds the answer in (parent
- * persists) and the model returns the next question. Errors toast via the
- * engine call wrapper, so a failed turn just lets the user retry.
+ * Question flow for the Company Bible, styled after Houston's coachmark tutorial
+ * (UiTour): one big question + tap-to-answer suggestion chips so a non-technical
+ * user rarely types. Runs the opening turn on mount. Each turn folds the answer
+ * in (parent persists) and the model returns the next question. Errors toast via
+ * the engine call wrapper, so a failed turn just lets the user retry.
  */
 export function PrdInterview({
   workspaceId,
@@ -29,11 +27,11 @@ export function PrdInterview({
 }) {
   const { t } = useTranslation("prd");
   const interview = usePrdInterview(workspaceId);
-  const [phase, setPhase] = useState<Phase>("welcome");
   const [question, setQuestion] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [answer, setAnswer] = useState("");
   const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
 
   const runTurn = (userAnswer: string) => {
     interview.mutate(
@@ -43,12 +41,12 @@ export function PrdInterview({
           onPrdUpdate(turn.prd);
           setAnswer("");
           if (turn.complete || !turn.nextQuestion) {
-            setPhase("done");
+            setDone(true);
             setQuestion(null);
             setSuggestions([]);
             return;
           }
-          setPhase("asking");
+          setDone(false);
           setQuestion(turn.nextQuestion);
           setSuggestions(turn.suggestions ?? []);
           setStep((s) => s + 1);
@@ -57,34 +55,19 @@ export function PrdInterview({
     );
   };
 
-  const busy = interview.isPending;
-  if (phase === "welcome") {
-    return (
-      <Card>
-        <div className="flex size-11 items-center justify-center rounded-full bg-primary/10">
-          <Sparkles className="size-5 text-primary" />
-        </div>
-        <h2 className="mt-4 text-[22px] font-normal leading-snug">
-          {t("interview.welcomeTitle")}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("interview.welcomeBody")}
-        </p>
-        <div className="mt-5 flex justify-end">
-          <Button
-            className="rounded-full"
-            onClick={() => runTurn("")}
-            disabled={busy}
-          >
-            {busy ? <Spinner className="size-4" /> : <Sparkles className="size-4" />}
-            {t("interview.start")}
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  // Kick off the opening question once, when the flow first mounts.
+  const kicked = useRef(false);
+  useEffect(() => {
+    if (!kicked.current) {
+      kicked.current = true;
+      runTurn("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (phase === "done") {
+  const busy = interview.isPending;
+
+  if (done) {
     return (
       <Card>
         <div className="flex size-11 items-center justify-center rounded-full bg-primary/10">
@@ -138,8 +121,7 @@ export function PrdInterview({
                 className={cn(
                   "rounded-full border border-border bg-secondary px-3 py-1.5",
                   "text-sm text-foreground transition-colors",
-                  "hover:bg-primary/10 hover:border-primary/30",
-                  "disabled:opacity-50",
+                  "hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50",
                 )}
               >
                 {s}

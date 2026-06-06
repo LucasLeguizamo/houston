@@ -57,9 +57,14 @@ fn build_prompt(prd: &Prd, user_answer: &str) -> String {
     let answer = serde_json::to_string(user_answer)
         .unwrap_or_else(|_| format!("{user_answer:?}"));
     format!(
-        r#"You are interviewing a non-technical founder to build their "Company Bible":
+        r#"You are interviewing a non-technical user to build their "Company Bible":
 the single source of truth about their company and product. You ask ONE question
 at a time and quietly keep a structured document up to date as they answer.
+
+The "role" field in the bible is who you're talking to (e.g. founder, investor,
+pm, vp). Adapt your questions and wording to what that role cares about most
+(an investor: market, traction, metrics; a pm: product, users, roadmap; a
+founder: the whole picture). Never ask them their role again.
 
 Here is the current Company Bible (JSON):
 {prd_json}

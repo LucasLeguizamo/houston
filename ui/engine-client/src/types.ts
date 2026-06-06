@@ -141,6 +141,8 @@ export interface PrdBrand {
 }
 
 export interface Prd {
+  /** Stakeholder perspective: "founder" | "investor" | "pm" | "vp" | ... */
+  role: string;
   company: PrdCompany;
   product: PrdProduct;
   market: PrdMarket;
@@ -166,6 +168,17 @@ export interface PrdInterviewTurn {
 }
 
 export interface PrdRecommendRequest {
+  provider?: string;
+  model?: string;
+}
+
+export interface PrdIngestRequest {
+  /** The client's current bible; the merged copy is returned to be saved. */
+  prd: Prd;
+  /** A website to fetch + extract. Wins over `text` when non-empty. */
+  url?: string;
+  /** Raw document text (e.g. a pasted or uploaded .txt/.md). */
+  text?: string;
   provider?: string;
   model?: string;
 }

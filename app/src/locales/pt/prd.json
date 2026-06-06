@@ -9,10 +9,28 @@
     "title": "Nenhum espaço de trabalho selecionado",
     "description": "Escolha ou crie um espaço de trabalho para começar a bíblia da empresa."
   },
+  "roles": {
+    "founder": "Fundador",
+    "cLevel": "Nível C",
+    "vp": "VP",
+    "pm": "Product manager",
+    "investor": "Investidor",
+    "operator": "Operador"
+  },
+  "start": {
+    "title": "Vamos configurar a bíblia da sua empresa",
+    "body": "Primeiro, quem é você? Vou adaptar as perguntas ao que importa para o seu papel.",
+    "roleQuestion": "Qual é o seu papel?",
+    "ingestTitle": "Agilize (opcional)",
+    "ingestBody": "Adicione seu site ou um documento e eu preencho o que der.",
+    "urlPlaceholder": "https://suaempresa.com",
+    "uploadDoc": "Enviar um documento",
+    "docNote": "Arquivos de texto funcionam melhor (.txt, .md). PDF em breve.",
+    "continue": "Continuar",
+    "skip": "Pular",
+    "ingesting": "Lendo seu material..."
+  },
   "interview": {
-    "welcomeTitle": "Vamos construir a bíblia da sua empresa",
-    "welcomeBody": "Responda algumas perguntas rápidas e eu capturo tudo sobre sua empresa. Toque em uma sugestão ou escreva a sua.",
-    "start": "Começar",
     "stepLabel": "Pergunta {{step}} · {{percent}}% completo",
     "thinking": "Pensando...",
     "suggestionsHint": "Escolha uma ou escreva a sua",

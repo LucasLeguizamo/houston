@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Prd,
+  PrdIngestRequest,
   PrdInterviewRequest,
   PrdInterviewTurn,
   PrdRecommendations,
@@ -40,6 +41,16 @@ export function usePrdInterview(
   return useMutation({
     mutationFn: (body: PrdInterviewRequest) =>
       tauriPrd.interview(workspaceId!, body),
+  });
+}
+
+/** Pre-fill the bible from a website URL or document text. Returns the merged
+ * bible for the caller to persist (via `useSavePrd`). */
+export function usePrdIngest(
+  workspaceId: string | undefined,
+): ReturnType<typeof useMutation<Prd, Error, PrdIngestRequest>> {
+  return useMutation({
+    mutationFn: (body: PrdIngestRequest) => tauriPrd.ingest(workspaceId!, body),
   });
 }
 

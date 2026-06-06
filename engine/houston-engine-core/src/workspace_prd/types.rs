@@ -8,6 +8,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct Prd {
+    /// The stakeholder perspective the bible is filled from (e.g. "founder",
+    /// "investor", "pm"). Frames the interview's focus and the recommendations.
+    /// Not company data, so it's excluded from the agent prompt section.
+    pub role: String,
     pub company: Company,
     pub product: Product,
     pub market: Market,

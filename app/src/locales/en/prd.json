@@ -9,10 +9,28 @@
     "title": "No workspace selected",
     "description": "Pick or create a workspace to start its company bible."
   },
+  "roles": {
+    "founder": "Founder",
+    "cLevel": "C-level",
+    "vp": "VP",
+    "pm": "Product manager",
+    "investor": "Investor",
+    "operator": "Operator"
+  },
+  "start": {
+    "title": "Let's set up your company bible",
+    "body": "First, who are you? I'll tailor the questions to what matters for your role.",
+    "roleQuestion": "What's your role?",
+    "ingestTitle": "Speed it up (optional)",
+    "ingestBody": "Add your website or a document and I'll pre-fill what I can.",
+    "urlPlaceholder": "https://yourcompany.com",
+    "uploadDoc": "Upload a document",
+    "docNote": "Text files work best (.txt, .md). PDFs coming soon.",
+    "continue": "Continue",
+    "skip": "Skip",
+    "ingesting": "Reading your material..."
+  },
   "interview": {
-    "welcomeTitle": "Let's build your company bible",
-    "welcomeBody": "Answer a few quick questions and I'll capture everything about your company. Tap a suggestion or type your own.",
-    "start": "Start",
     "stepLabel": "Question {{step}} · {{percent}}% complete",
     "thinking": "Thinking...",
     "suggestionsHint": "Pick one or write your own",

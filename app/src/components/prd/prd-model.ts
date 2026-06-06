@@ -125,6 +125,7 @@ export function computeCompleteness(prd: Prd): number {
 /** An all-empty bible, used as the fallback before the query resolves. */
 export function emptyPrd(): Prd {
   return {
+    role: "",
     company: {
       name: "",
       oneLiner: "",

@@ -16,6 +16,7 @@ import { useWorkspaceStore } from "../../stores/workspaces";
 import { usePrd, useSavePrd } from "../../hooks/queries";
 import { computeCompleteness, emptyPrd } from "./prd-model";
 import { PrdSections } from "./prd-sections";
+import { PrdOnboardingStart } from "./prd-onboarding-start";
 import { PrdInterview } from "./prd-interview";
 import { PrdRecommendations } from "./prd-recommendations";
 
@@ -28,6 +29,7 @@ export function CompanyBible() {
   const { data, isLoading } = usePrd(workspaceId);
   const save = useSavePrd(workspaceId);
   const [view, setView] = useState<View>("bible");
+  const [started, setStarted] = useState(false);
 
   if (!workspace) {
     return (
@@ -45,6 +47,8 @@ export function CompanyBible() {
   const prd: Prd = data ?? emptyPrd();
   const completeness = computeCompleteness(prd);
   const persist = (next: Prd) => save.mutate(next);
+  // Show the role + ingest start screen only for a brand-new, untouched bible.
+  const showStart = !started && !prd.role && completeness === 0;
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -84,13 +88,22 @@ export function CompanyBible() {
             </div>
           ) : view === "bible" ? (
             <div className="flex flex-col gap-6">
-              <PrdInterview
-                workspaceId={workspace.id}
-                prd={prd}
-                completeness={completeness}
-                onPrdUpdate={persist}
-                onComplete={() => setView("recommend")}
-              />
+              {showStart ? (
+                <PrdOnboardingStart
+                  workspaceId={workspace.id}
+                  prd={prd}
+                  onPrdUpdate={persist}
+                  onStarted={() => setStarted(true)}
+                />
+              ) : (
+                <PrdInterview
+                  workspaceId={workspace.id}
+                  prd={prd}
+                  completeness={completeness}
+                  onPrdUpdate={persist}
+                  onComplete={() => setView("recommend")}
+                />
+              )}
               <PrdSections prd={prd} onChange={persist} />
             </div>
           ) : (

@@ -19,6 +19,7 @@ use crate::error::{CoreError, CoreResult};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+pub mod ingest;
 pub mod interview;
 pub mod recommend;
 mod types;

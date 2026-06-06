@@ -39,5 +39,6 @@ export {
   usePrd,
   useSavePrd,
   usePrdInterview,
+  usePrdIngest,
   usePrdRecommend,
 } from "./use-prd";

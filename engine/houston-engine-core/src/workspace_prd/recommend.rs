@@ -105,9 +105,11 @@ Here are the available agents (the ONLY ones you may recommend; use their exact 
 {catalog_block}
 
 Recommend the top 3-5 agents that would help this company the most, weighting
-their stated pain points, product, and stage. For each, give a one-sentence
-reason in plain language and list the specific needs it covers. Give a relevance
-score from 0.0 to 1.0.
+their stated pain points, product, and stage. Also weight the bible's "role"
+field (who's asking): an investor wants agents that surface metrics and market
+intel, a pm wants product/user work, a founder wants broad leverage. For each
+agent give a one-sentence reason in plain language and list the specific needs
+it covers. Give a relevance score from 0.0 to 1.0.
 
 Also propose 2-4 concrete strategies the company should run: each is either a
 recurring "routine" (a scheduled task an agent does, e.g. a weekly pipeline
